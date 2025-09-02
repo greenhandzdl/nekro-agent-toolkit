@@ -29,7 +29,7 @@ Nekro Agent 是一个基于 Docker 的应用程序，可以与 QQ 机器人结�
 
 ```bash
 # 下载并运行安装脚本
-curl -O https://raw.githubusercontent.com/KroMiose/nekro-agent-installer/main/install.py
+curl -O https://raw.githubusercontent.com/greenhandzdl/nekro-agent-installer/main/install.py
 chmod +x install.py
 python3 install.py
 ```
