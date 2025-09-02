@@ -183,3 +183,7 @@ cython_debug/
 # PyCharm Community Edition
 .idea/
 .idea_modules/
+
+# Generate Files
+.env*
+docker*.yml

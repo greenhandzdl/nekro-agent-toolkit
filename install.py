@@ -12,7 +12,9 @@ import urllib.request
 # --- 配置 ---
 BASE_URLS = [
     "https://raw.githubusercontent.com/KroMiose/nekro-agent/main/docker",
-    "https://raw.gitcode.com/gh_mirrors/ne/nekro-agent/raw/main/docker"
+    "https://raw.gitcode.com/gh_mirrors/ne/nekro-agent/raw/main/docker",
+    "http://hk-yd-proxy.gitwarp.com:6699/https://raw.githubusercontent.com/KroMiose/nekro-agent/main/docker"
+
 ]
 
 # --- 辅助函数 ---
