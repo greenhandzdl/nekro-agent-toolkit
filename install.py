@@ -111,7 +111,10 @@ def check_dependencies():
 
 def setup_directories():
     """设置应用数据目录。"""
-    nekro_data_dir = os.getenv("NEKRO_DATA_DIR", os.path.join(os.path.expanduser("~"), "srv", "nekro_agent"))
+    # 默认目录（删）
+    # nekro_data_dir = os.getenv("NEKRO_DATA_DIR", os.path.join(os.path.expanduser("~"), "srv", "nekro_agent"))
+    # 当前目录（脚本摆放位置目录）
+    nekro_data_dir = os.getcwd()
     print(f"应用数据目录 (NEKRO_DATA_DIR): {nekro_data_dir}")
 
     try:
