@@ -15,6 +15,7 @@ Nekro Agent 是一个基于 Docker 的应用程序，可以与 QQ 机器人结�
 - 可选集成 NapCat QQ 机器人服务
 - 自动生成安全密钥和访问令牌
 - 自动配置防火墙规则（如果使用 ufw）
+- 提供更新工具保持服务最新
 
 ## 系统要求
 
@@ -73,30 +74,31 @@ python3 install.py --with-napcat
 如果启用了 NapCat 服务，还会提供：
 - NapCat 服务端口：默认为 `6099`
 
+## 更新工具
+
+项目提供 update.py 脚本用于更新已安装的 Nekro Agent 服务：
+
+```bash
+# 仅更新 Nekro Agent 核心服务（推荐）
+python3 update.py
+
+# 更新所有服务（包括 NapCat 等）
+python3 update.py --all
+
+# 指定特定的数据目录
+python3 update.py /path/to/nekro/data
+python3 update.py --all /path/to/nekro/data
+```
+
+两种更新方式的区别：
+1. 默认方式：仅更新 Nekro Agent 和沙盒镜像
+2. `--all` 方式：更新所有镜像并重启容器
+
 ## 注意事项
 
 1. 如果您使用云服务器，请在云服务商的安全组中放行相应端口
 2. 如果需要从外部访问，请将地址中的 `127.0.0.1` 替换为您的服务器公网 IP
 3. 如果启用了 NapCat 服务，请使用 `sudo docker logs [容器名]napcat` 查看机器人 QQ 登录二维码
-
-## 常用管理命令
-
-```bash
-# 查看 Nekro Agent 服务日志
-sudo docker logs -f [实例名]nekro_agent
-
-# 查看 NapCat 服务日志（如果启用）
-sudo docker logs -f [实例名]napcat
-
-# 停止服务
-sudo docker-compose down
-
-# 启动服务
-sudo docker-compose up -d
-
-# 更新服务
-sudo docker-compose pull
-```
 
 ## 故障排除
 

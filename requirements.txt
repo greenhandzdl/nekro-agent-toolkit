@@ -1,0 +1,19 @@
+# Nekro Agent Installer Requirements
+# 该项目是一个纯Python脚本项目，只使用Python标准库
+
+# 使用的标准库模块:
+# - argparse: 用于命令行参数解析
+# - os: 用于操作系统接口
+# - secrets: 用于生成安全随机数
+# - shutil: 用于高级文件操作
+# - string: 用于字符串操作
+# - subprocess: 用于执行外部命令
+# - sys: 用于系统特定的参数和函数
+# - time: 用于时间相关功能
+# - urllib.request: 用于URL操作
+
+# 该项目不依赖任何第三方库，仅使用Python 3标准库
+# 运行环境要求:
+# - Python 3.6+
+# - Docker
+# - Docker Compose
