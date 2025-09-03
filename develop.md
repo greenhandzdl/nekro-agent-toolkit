@@ -1,47 +1,57 @@
-# Developer Guide
+# 开发者指南
 
-This document outlines the project's internal structure and module relationships to aid in future development.
+本文档概述了项目的内部结构和模块关系，以帮助未来开发。
 
-## Project Structure
+## 项目结构
 
-The project is organized into the following main directories:
+项目被组织为以下几个主要目录：
 
-- `module/`: Contains the main entry point scripts (`install.py`, `update.py`).
-- `utils/`: Contains helper functions.
-  - `helpers.py`: Low-level, shared utility functions (e.g., system commands, file operations).
-  - `install_utils.py`: High-level functions specific to the installation process.
-  - `update_utils.py`: High-level functions specific to the update process.
-- `conf/`: Contains static configuration files.
-  - `settings.py`: Shared settings like remote repository URLs.
+- `app.py`: 项目的统一命令行入口，负责调度安装和更新任务。
+- `module/`: 封装了核心功能的模块，可被外部调用。
+  - `install.py`: 提供 `install_agent` 函数。
+  - `update.py`: 提供 `update_agent` 函数。
+- `utils/`: 存放辅助函数。
+  - `helpers.py`: 底层的、跨模块共享的工具函数（如系统命令、文件操作）。
+  - `install_utils.py`: 服务于安装流程的高级函数。
+  - `update_utils.py`: 服务于更新流程的高级函数。
+- `conf/`: 存放静态配置文件。
+  - `settings.py`: 共享的配置，如远程仓库 URL。
 
-## Module Relationship Diagram
+## 模块关系图
 
-The following diagram illustrates how the different modules import and depend on each other.
+下图展示了不同模块之间的导入和依赖关系。
 
 ```mermaid
 graph TD
-    subgraph "Entry Points"
+    subgraph "主入口 (Main Entry Point)"
+        APP["app.py"];
+    end
+
+    subgraph "高级 API 模块"
         A["module/install.py"];
         B["module/update.py"];
     end
 
-    subgraph "Business Logic"
+    subgraph "业务逻辑 (Business Logic)"
         C["utils/install_utils.py"];
         D["utils/update_utils.py"];
     end
 
-    subgraph "Shared Libraries"
+    subgraph "共享库 (Shared Libraries)"
         E["utils/helpers.py"];
         F["conf/settings.py"];
     end
 
-    A -- calls --> C;
-    A -- calls --> E;
-    B -- calls --> D;
-    B -- calls --> E;
+    APP -- 调用 --> A;
+    APP -- 调用 --> B;
 
-    C -- imports --> E;
-    D -- imports --> E;
+    A -- 调用 --> C;
+    A -- 调用 --> E;
+    B -- 调用 --> D;
+    B -- 调用 --> E;
 
-    E -- imports --> F;
+    C -- 导入 --> E;
+    D -- 导入 --> E;
+
+    E -- 导入 --> F;
 ```

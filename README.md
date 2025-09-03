@@ -4,18 +4,13 @@ Nekro Agent 是一个基于 Docker 的应用程序，可以与 QQ 机器人结�
 
 ## 功能特性
 
+- 统一的 `app.py` 脚本入口，用于安装和更新
 - 自动检查系统依赖（Docker 和 Docker Compose）
 - 自动下载和配置所需的配置文件
-> [!NOTE]
-> 
-> 如果存在'.env'文件，那么脚本会用你提供的文件。
-> 
-> 即使存在'docker-compose.yml'文件也会下，这可能会保证你一直在使用新的容器。
 - 支持一键部署 Nekro Agent 主服务
 - 可选集成 NapCat QQ 机器人服务
 - 自动生成安全密钥和访问令牌
 - 自动配置防火墙规则（如果使用 ufw）
-- 提供更新工具保持服务最新
 
 ## 系统要求
 
@@ -24,45 +19,67 @@ Nekro Agent 是一个基于 Docker 的应用程序，可以与 QQ 机器人结�
 - Docker Compose 已安装
 - 管理员权限（sudo）
 
-## 安装方式
+## 使用方法
 
-### 自动安装（推荐）
+本项目使用 `app.py` 作为统一的命令行工具来管理安装和更新。
 
-```bash
-# 下载并运行安装脚本
-curl -O https://raw.githubusercontent.com/greenhandzdl/nekro-agent-installer/main/install.py
-chmod +x install.py
-python3 install.py
-```
+### 安装
 
-### 使用参数安装
+使用 `-i` 或 `--install` 参数执行安装。你需要提供一个用于存放应用数据的目录路径。
 
 ```bash
-# 启用 NapCat 服务安装
-python3 install.py --with-napcat
-# 不启用 NapCat 服务安装（不受支持）
-# 这玩意本来就要折腾，要么你自己看源代码改，要么你自己按照自动安装流程走。
+# 在当前目录下创建一个名为 na_data 的文件夹，并安装服务
+python3 app.py --install ./na_data
 ```
 
-## 安装过程说明
+**安装选项:**
 
-1. **依赖检查**：脚本会自动检查系统中是否安装了 Docker 和 Docker Compose
-2. **目录设置**：创建应用数据目录，在**脚本运行目录**下。可以参考`setup_directories`函数，或者搜索`nekro_data_dir`变量，与原项目不同。
-3. **配置文件生成**：自动下载 `.env` 配置文件并生成必要的安全密钥
-> 你有'.env'，那么就用你自己的了。
-4. **用户确认**：在正式安装前会提示用户确认配置
-5. **服务部署**：下载并启动 Docker 容器
-6. **防火墙配置**：如果系统使用 ufw，会自动配置防火墙规则
+- **启用 NapCat 服务**：附加 `--with-napcat` 参数。
+  ```bash
+  python3 app.py --install ./na_data --with-napcat
+  ```
+
+- **预演模式**：附加 `--dry-run` 参数，将只生成配置文件，不执行实际安装。
+  ```bash
+  python3 app.py --install ./na_data --dry-run
+  ```
+
+- **自动确认**：附加 `-y` 或 `--yes` 参数，脚本将不会请求交互式确认。
+  ```bash
+  python3 app.py --install ./na_data -y
+  ```
+
+### 更新
+
+- **部分更新 (推荐)**：使用 `-u` 或 `--update` 参数，仅更新 Nekro Agent 核心服务。
+  ```bash
+  python3 app.py --update ./na_data
+  ```
+
+- **完全更新 (升级)**：使用 `-ua` 或 `--upgrade` 参数，更新所有 Docker 镜像（包括数据库等）。
+  ```bash
+  python3 app.py --upgrade ./na_data
+  ```
+
+## 安装过程高级说明
+
+1. **依赖检查**：脚本会自动检查系统中是否安装了 Docker 和 Docker Compose。
+2. **目录设置**：在您指定的路径创建应用数据目录。
+3. **配置文件生成**：
+    - 如果您指定的目录下已存在 `.env` 文件，脚本会直接使用它。
+    - 否则，脚本会从远程仓库下载最新的 `.env.example` 作为模板，并自动填充必要的随机密钥。
+4. **服务部署**：下载并启动 Docker 容器。
+5. **防火墙配置**：如果系统使用 ufw，会自动配置防火墙规则。
 
 ## 配置说明
 
 安装过程中会自动生成以下配置项：
 
-- `ONEBOT_ACCESS_TOKEN`：OneBot 访问令牌（32位随机字符串）
-- `NEKRO_ADMIN_PASSWORD`：管理员密码（16位随机字符串）
-- `QDRANT_API_KEY`：Qdrant API 密钥（32位随机字符串）
+- `ONEBOT_ACCESS_TOKEN`：OneBot 访问令牌
+- `NEKRO_ADMIN_PASSWORD`：管理员密码
+- `QDRANT_API_KEY`：Qdrant API 密钥
 
-您可以在 `.env` 文件中修改这些配置以及其他选项。
+您可以在数据目录下的 `.env` 文件中修改这些配置以及其他选项。
 
 ## 访问信息
 
@@ -74,40 +91,20 @@ python3 install.py --with-napcat
 如果启用了 NapCat 服务，还会提供：
 - NapCat 服务端口：默认为 `6099`
 
-## 更新工具
-
-项目提供 update.py 脚本用于更新已安装的 Nekro Agent 服务：
-
-```bash
-# 仅更新 Nekro Agent 核心服务（推荐）
-python3 update.py
-
-# 更新所有服务（包括 NapCat 等）
-python3 update.py --all
-
-# 指定特定的数据目录
-python3 update.py /path/to/nekro/data
-python3 update.py --all /path/to/nekro/data
-```
-
-两种更新方式的区别：
-1. 默认方式：仅更新 Nekro Agent 和沙盒镜像
-2. `--all` 方式：更新所有镜像并重启容器
-
 ## 注意事项
 
-1. 如果您使用云服务器，请在云服务商的安全组中放行相应端口
-2. 如果需要从外部访问，请将地址中的 `127.0.0.1` 替换为您的服务器公网 IP
-3. 如果启用了 NapCat 服务，请使用 `sudo docker logs [容器名]napcat` 查看机器人 QQ 登录二维码
+1. 如果您使用云服务器，请在云服务商的安全组中放行相应端口。
+2. 如果需要从外部访问，请将地址中的 `127.0.0.1` 替换为您的服务器公网 IP。
+3. 如果启用了 NapCat 服务，请使用 `sudo docker logs [容器名]napcat` 查看机器人 QQ 登录二维码。
 
 ## 故障排除
 
 如果安装过程中遇到问题，请检查：
 
-1. 确保系统已正确安装 Docker 和 Docker Compose
-2. 确保当前用户具有 sudo 权限
-3. 检查网络连接是否正常（安装过程需要从 GitHub 下载配置文件）
-4. 检查防火墙设置是否阻止了必要的端口
+1. 确保系统已正确安装 Docker 和 Docker Compose。
+2. 确保当前用户具有 sudo 权限。
+3. 检查网络连接是否正常（安装过程需要从 GitHub 下载配置文件）。
+4. 检查防火墙设置是否阻止了必要的端口。
 
 ## 许可证
 
