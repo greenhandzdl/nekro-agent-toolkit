@@ -194,5 +194,7 @@ plugin_data/
 plugins/
 wallpapers/
 na_data/
-
 na_backup*.tar*
+
+# Generate Logs
+*_log.txt
