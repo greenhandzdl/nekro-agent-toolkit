@@ -1,27 +1,31 @@
+[Read this in English](./README-EN.md)
+
 # Nekro Agent 安装器
 
 Nekro Agent 是一个基于 Docker 的应用程序，可以与 QQ 机器人结合使用。本安装器可以帮助您快速部署 Nekro Agent 及其相关服务。
 
 ## 功能特性
 
-- 统一的 `app.py` 脚本入口，用于安装和更新
+- 统一的 `app.py` 脚本入口，用于安装、更新和备份恢复
 - 自动检查系统依赖（Docker 和 Docker Compose）
 - 自动下载和配置所需的配置文件
 - 支持一键部署 Nekro Agent 主服务
 - 可选集成 NapCat QQ 机器人服务
 - 自动生成安全密钥和访问令牌
 - 自动配置防火墙规则（如果使用 ufw）
+- 内置备份与恢复工具
 
 ## 系统要求
 
 - Linux 或类 Unix 操作系统
 - Docker 已安装
 - Docker Compose 已安装
+- `zstd` 压缩工具（推荐，用于创建更小的备份文件）
 - 管理员权限（sudo）
 
 ## 使用方法
 
-本项目使用 `app.py` 作为统一的命令行工具来管理安装和更新。
+本项目使用 `app.py` 作为统一的命令行工具来管理安装、更新和备份恢复。
 
 ### 安装
 
@@ -35,19 +39,8 @@ python3 app.py --install ./na_data
 **安装选项:**
 
 - **启用 NapCat 服务**：附加 `--with-napcat` 参数。
-  ```bash
-  python3 app.py --install ./na_data --with-napcat
-  ```
-
-- **预演模式**：附加 `--dry-run` 参数，将只生成配置文件，不执行实际安装。
-  ```bash
-  python3 app.py --install ./na_data --dry-run
-  ```
-
+- **预演模式**：附加 `--dry-run` 参数，将只生成配置文件或打印计划，不执行实际操作。
 - **自动确认**：附加 `-y` 或 `--yes` 参数，脚本将不会请求交互式确认。
-  ```bash
-  python3 app.py --install ./na_data -y
-  ```
 
 ### 更新
 
@@ -61,6 +54,26 @@ python3 app.py --install ./na_data
   python3 app.py --upgrade ./na_data
   ```
 
+### 备份与恢复
+
+- **备份**：使用 `-b` 或 `--backup` 参数。需要提供源数据目录和备份文件存放目录。
+  ```bash
+  # 将 ./na_data 目录备份到 ./backups 文件夹中
+  python3 app.py --backup ./na_data ./backups
+  ```
+  > 脚本会自动生成带时间戳的备份文件，如 `na_backup_1678886400.tar.zstd`。
+
+- **恢复**：使用 `-r` 或 `--recovery` 参数。需要提供备份文件和要恢复到的目标目录。
+  ```bash
+  python3 app.py --recovery ./backups/na_backup_1678886400.tar.zstd ./na_data_new
+  ```
+  > **注意**: 恢复操作会覆盖目标目录中的文件，如果目录非空，程序会请求确认。
+
+- **恢复并安装**：使用 `-ri` 或 `--recover-install` 参数。此命令会先执行恢复，然后在恢复的数据之上继续执行安装流程（如下载 `docker-compose.yml`，拉取镜像等）。
+  ```bash
+  python3 app.py --recover-install ./backups/na_backup_1678886400.tar.zstd ./na_data_new
+  ```
+
 ## 安装过程高级说明
 
 1. **依赖检查**：脚本会自动检查系统中是否安装了 Docker 和 Docker Compose。
@@ -70,16 +83,6 @@ python3 app.py --install ./na_data
     - 否则，脚本会从远程仓库下载最新的 `.env.example` 作为模板，并自动填充必要的随机密钥。
 4. **服务部署**：下载并启动 Docker 容器。
 5. **防火墙配置**：如果系统使用 ufw，会自动配置防火墙规则。
-
-## 配置说明
-
-安装过程中会自动生成以下配置项：
-
-- `ONEBOT_ACCESS_TOKEN`：OneBot 访问令牌
-- `NEKRO_ADMIN_PASSWORD`：管理员密码
-- `QDRANT_API_KEY`：Qdrant API 密钥
-
-您可以在数据目录下的 `.env` 文件中修改这些配置以及其他选项。
 
 ## 访问信息
 

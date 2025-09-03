@@ -1,7 +1,7 @@
 # Nekro Agent Installer Requirements
-# 该项目是一个纯Python脚本项目，只使用Python标准库
+# 本项目是一个纯 Python 脚本项目，只使用 Python 标准库，因此无需通过 pip 安装任何第三方包。
 
-# 使用的标准库模块:
+# 使用的 Python 标准库模块包括:
 # - argparse: 用于命令行参数解析
 # - os: 用于操作系统接口
 # - secrets: 用于生成安全随机数
@@ -9,11 +9,19 @@
 # - string: 用于字符串操作
 # - subprocess: 用于执行外部命令
 # - sys: 用于系统特定的参数和函数
+# - tarfile: 用于处理 .tar 归档文件
+# - tempfile: 用于创建临时文件
 # - time: 用于时间相关功能
 # - urllib.request: 用于URL操作
 
-# 该项目不依赖任何第三方库，仅使用Python 3标准库
-# 运行环境要求:
+# --- 系统环境要求 ---
+# 以下为运行本工具所需的外部依赖，请确保已在您的系统中安装：
+
+# 必需:
 # - Python 3.6+
 # - Docker
-# - Docker Compose
+# - Docker Compose (v1 或 v2)
+
+# 可选 (用于特定功能):
+# - zstd: 用于创建压缩率更高的 .tar.zstd 备份文件 (推荐)
+# - ufw: 用于自动配置防火墙规则 (如果您的系统使用 ufw)
