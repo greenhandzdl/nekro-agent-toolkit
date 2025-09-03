@@ -134,4 +134,4 @@ python3 app.py --install ./na_data
 
 ## 许可证
 
-请参考 [Nekro Agent 项目](https://github.com/KroMiose/nekro-agent) 获取许可证信息和[本项目](./LICENSE)。
+请参考 [Nekro Agent 项目](https://github.com/KroMiose/nekro-agent)和[本项目](./LICENSE) 获取许可证信息。
