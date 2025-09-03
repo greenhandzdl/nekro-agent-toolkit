@@ -80,6 +80,27 @@ def run_sudo_command(command, description):
         print(f"错误: 命令 '{cmd_name}' 未找到。", file=sys.stderr)
         sys.exit(1)
 
+def check_dependencies():
+    """检查并确认所有必需的系统依赖（如 docker, docker-compose）都已安装。
+
+    如果缺少依赖，则打印错误信息并退出脚本。
+
+    返回:
+        str: 可用的 docker-compose 命令（'docker-compose' 或 'docker compose'）。
+    """
+    print("正在检查依赖...")
+    if not command_exists("docker"):
+        print("错误: 命令 'docker' 未找到，请先安装后再运行。", file=sys.stderr)
+        sys.exit(1)
+
+    docker_compose_cmd = get_docker_compose_cmd()
+    if not docker_compose_cmd:
+        print("错误: 'docker-compose' 或 'docker compose' 未找到，请先安装后再运行。", file=sys.stderr)
+        sys.exit(1)
+    
+    print("依赖检查通过。")
+    print(f"使用 '{docker_compose_cmd}' 作为 docker-compose 命令。")
+    return docker_compose_cmd
 
 # --- 网络 ---
 
