@@ -55,7 +55,7 @@ graph TD
     INSTALL -- calls --> INSTALL_UTILS;
     UPDATE -- calls --> UPDATE_UTILS;
     BACKUP -- calls --> BACKUP_UTILS;
-    BACKUP -- calls --> INSTALL; # for recover_and_install
+    BACKUP -- calls --> INSTALL;
     
     INSTALL_UTILS -- imports --> HELPERS;
     UPDATE_UTILS -- imports --> HELPERS;
