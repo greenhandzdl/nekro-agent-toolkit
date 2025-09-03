@@ -28,7 +28,7 @@ Nekro Agent is a Docker-based application that can be used with QQ bots. This in
 ### Method 1: Install with pip (Recommended)
 
 ```bash
-pip install nekro-agent-installer-toolkit
+pip install nekro-agent-toolkit
 ```
 
 After installation, you can directly use the `nekro-agent-toolkit` command:

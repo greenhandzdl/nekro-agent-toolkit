@@ -28,7 +28,7 @@ Nekro Agent 是一个基于 Docker 的应用程序，可以与 QQ 机器人结�
 ### 方法一：使用 pip 安装（推荐）
 
 ```bash
-pip install nekro-agent-installer-toolkit
+pip install nekro-agent-toolkit
 ```
 
 安装完成后，即可直接使用 `nekro-agent-toolkit` 命令：
