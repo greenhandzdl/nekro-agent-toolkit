@@ -29,16 +29,8 @@ def main():
     
     args = parser.parse_args()
     
-    # 检查 docker 是否安装
-    if not command_exists("docker"):
-        print("错误: 未找到 'docker' 命令，请先安装 Docker。", file=sys.stderr)
-        sys.exit(1)
-    
-    # 获取 docker-compose 命令
-    docker_compose_cmd = get_docker_compose_cmd()
-    if not docker_compose_cmd:
-        print("错误: 未找到 'docker-compose' 或 'docker compose' 命令。", file=sys.stderr)
-        sys.exit(1)
+    # 检查依赖
+    docker_compose_cmd = check_dependencies()
     
     # 检查数据目录是否存在
     if not os.path.exists(args.nekro_data_dir):
