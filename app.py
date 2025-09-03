@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import argparse
 import os
 import sys
@@ -13,6 +15,7 @@ def main():
         description="Nekro Agent 安装、更新与备份的统一管理工具。",
         epilog=(
             "用法示例:\n"
+            "   # 如果你从源代码安装，你将直接运行python app.py，否则运行nekro-agent-toolkit。\n\n"
             "  python app.py --install ./na_data\n"
             "    # 在 ./na_data 目录中安装 Nekro Agent\n\n"
             "  python app.py --update ./na_data\n"

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nekro-agent-toolkit"
+version = "1.0.0"
+description = "Nekro Agent 安装、更新与备份的统一管理工具"
+readme = "README.md"
+authors = [{name = "greenhandzdl"}]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+requires-python = ">=3.6"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/greenhandzdl/nekro-agent-toolkit"
+
+[project.scripts]
+nekro-agent-toolkit = "app:main"
+
+[tool.setuptools.packages.find]
+exclude = ["doc*", "tests*"]
+
+[tool.setuptools.package-data]
+conf = ["*.py"]
+
+[tool.setuptools]
+py-modules = ["app"]
