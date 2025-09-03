@@ -359,6 +359,7 @@ def main():
     parser = argparse.ArgumentParser(description="Nekro Agent Installer")
     parser.add_argument('nekro_data_dir', nargs='?', default=NEKRO_DATA_DIR, help='The directory to install Nekro Agent. Defaults to the current directory.')
     parser.add_argument('--with-napcat', action='store_true', help="Enable NapCat service.")
+    parser.add_argument('--dry-run', action='store_true', help='Only generate the .env file without running the installation.')
     args = parser.parse_args()
 
     # 确定最终的应用数据目录
@@ -367,6 +368,10 @@ def main():
     docker_compose_cmd = check_dependencies()
     setup_directories(nekro_data_dir)
     env_path = configure_env_file(nekro_data_dir, original_cwd)
+
+    if args.dry_run:
+        print(f"\n--dry-run 完成。\n.env 文件已在 {env_path} 生成。\n未执行任何安装操作。\n")
+        sys.exit(0)
     
     confirm_installation()
     
