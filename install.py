@@ -13,19 +13,21 @@ from utils.install_utils import (
 def main():
     """主安装脚本的协调器，负责按顺序调用所有安装步骤。"""
     original_cwd = os.getcwd()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    default_data_dir = os.path.join(script_dir, "na_data")
     
     # --- 参数解析 ---
     parser = argparse.ArgumentParser(
         description="Nekro Agent 安装与管理脚本",
         epilog="用法示例:\n" 
-               "  python install.py                # 在当前目录安装\n" 
+               "  python install.py                # 在脚本目录下创建 na_data/ 并安装\n" 
                "  python install.py /srv/nekro     # 在指定目录 /srv/nekro 安装\n" 
                "  python install.py --with-napcat  # 安装并启用 NapCat\n" 
                "  python install.py --dry-run      # 仅生成 .env 文件，不执行安装",
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument('nekro_data_dir', nargs='?', default=os.getcwd(), 
-                        help='Nekro Agent 的应用数据目录。\n默认为当前工作目录。')
+    parser.add_argument('nekro_data_dir', nargs='?', default=default_data_dir, 
+                        help=f'Nekro Agent 的应用数据目录.\n默认为脚本所在目录下的 na_data/ 文件夹:\n({default_data_dir})')
     parser.add_argument('--with-napcat', action='store_true', 
                         help='同时部署 NapCat 服务。')
     parser.add_argument('--dry-run', action='store_true', 
@@ -50,6 +52,7 @@ def main():
     run_docker_operations(docker_compose_cmd, env_path)
     configure_firewall(env_path, with_napcat)
     print_summary(env_path, with_napcat)
+
 
 if __name__ == "__main__":
     main()
