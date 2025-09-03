@@ -1,4 +1,4 @@
-[以中文阅读](./README.md)
+[以中文阅读](../README.md)
 
 # Nekro Agent Installer
 

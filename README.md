@@ -1,4 +1,4 @@
-[Read this in English](./README-EN.md)
+[Read this in English](./doc/README-EN.md)
 
 # Nekro Agent 安装器
 
