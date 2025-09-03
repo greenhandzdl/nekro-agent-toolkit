@@ -148,6 +148,21 @@ def get_env_value(env_path, key):
                 return line.strip().split('=', 1)[1].strip()
     return ""
 
+def populate_env_secrets(env_path):
+    """确保 .env 文件中包含所有必需的随机生成值。
+
+    如果 .env 文件中缺少 ONEBOT_ACCESS_TOKEN, NEKRO_ADMIN_PASSWORD, 或 QDRANT_API_KEY，
+    此函数会为它们生成新的随机值并更新文件。
+
+    参数:
+        env_path (str): .env 文件的路径。
+    """
+    print("正在检查并生成必要的访问凭证...")
+    for key, length in [("ONEBOT_ACCESS_TOKEN", 32), ("NEKRO_ADMIN_PASSWORD", 16), ("QDRANT_API_KEY", 32)]:
+        if not get_env_value(env_path, key):
+            print(f"正在生成随机 {key}...")
+            update_env_file(env_path, key, generate_random_string(length))
+
 # --- 安装步骤 ---
 
 def check_dependencies():
@@ -227,13 +242,11 @@ def configure_env_file(nekro_data_dir, original_cwd):
             shutil.copy(env_example_path, env_path)
             print("已创建 .env 文件。")
 
-    print("正在更新 .env 文件...")
+    print("正在更新 .env 文件中的 NEKRO_DATA_DIR...")
     update_env_file(env_path, "NEKRO_DATA_DIR", nekro_data_dir)
+    
+    populate_env_secrets(env_path)
 
-    for key, length in [("ONEBOT_ACCESS_TOKEN", 32), ("NEKRO_ADMIN_PASSWORD", 16), ("QDRANT_API_KEY", 32)]:
-        if not get_env_value(env_path, key):
-            print(f"正在生成随机 {key}...")
-            update_env_file(env_path, key, generate_random_string(length))
     return env_path
 
 def confirm_installation():
@@ -356,15 +369,29 @@ def print_summary(env_path, with_napcat):
 def main():
     """主安装脚本的协调器，负责按顺序调用所有安装步骤。"""
     original_cwd = os.getcwd()
-    parser = argparse.ArgumentParser(description="Nekro Agent Installer")
-    parser.add_argument('nekro_data_dir', nargs='?', default=NEKRO_DATA_DIR, help='The directory to install Nekro Agent. Defaults to the current directory.')
-    parser.add_argument('--with-napcat', action='store_true', help="Enable NapCat service.")
-    parser.add_argument('--dry-run', action='store_true', help='Only generate the .env file without running the installation.')
+    
+    # --- 参数解析 ---
+    parser = argparse.ArgumentParser(
+        description="Nekro Agent 安装与管理脚本",
+        epilog="用法示例:\n" 
+               "  python install.py                # 在当前目录安装\n" 
+               "  python install.py /srv/nekro     # 在指定目录 /srv/nekro 安装\n" 
+               "  python install.py --with-napcat  # 安装并启用 NapCat\n" 
+               "  python install.py --dry-run      # 仅生成 .env 文件，不执行安装",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument('nekro_data_dir', nargs='?', default=NEKRO_DATA_DIR, 
+                        help='Nekro Agent 的应用数据目录。\n默认为当前工作目录。')
+    parser.add_argument('--with-napcat', action='store_true', 
+                        help='同时部署 NapCat 服务。')
+    parser.add_argument('--dry-run', action='store_true', 
+                        help='预演模式：仅生成 .env 文件，不执行实际安装。')
     args = parser.parse_args()
 
-    # 确定最终的应用数据目录
+    # --- 路径处理 ---
     nekro_data_dir = os.path.abspath(args.nekro_data_dir)
 
+    # --- 执行安装步骤 ---
     docker_compose_cmd = check_dependencies()
     setup_directories(nekro_data_dir)
     env_path = configure_env_file(nekro_data_dir, original_cwd)
