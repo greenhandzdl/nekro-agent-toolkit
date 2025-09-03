@@ -125,4 +125,4 @@ If you encounter problems during installation, please check:
 
 ## License
 
-Please refer to the [Nekro Agent Project](https://github.com/KroMiose/nekro-agent) for license information.
+Please refer to the [Nekro Agent Project](https://github.com/KroMiose/nekro-agent) and [this project](../LICENSE) for license information.

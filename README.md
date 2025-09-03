@@ -59,14 +59,14 @@ python3 app.py --install ./na_data
 
 - **部分更新 (推荐)**：使用 `-u` 或 `--update` 参数，仅更新 Nekro Agent 核心服务。
   ```bash
-  nekro-agent --update ./na_data
+  nekro-agent-toolkit --update ./na_data
   # 或者从源码运行:
   python3 app.py --update ./na_data
   ```
 
 - **完全更新 (升级)**：使用 `-ua` 或 `--upgrade` 参数，更新所有 Docker 镜像（包括数据库等）。
   ```bash
-  nekro-agent --upgrade ./na_data
+  nekro-agent-toolkit --upgrade ./na_data
   # 或者从源码运行:
   python3 app.py --upgrade ./na_data
   ```
@@ -76,7 +76,7 @@ python3 app.py --install ./na_data
 - **备份**：使用 `-b` 或 `--backup` 参数。需要提供源数据目录和备份文件存放目录。
   ```bash
   # 将 ./na_data 目录备份到 ./backups 文件夹中
-  nekro-agent --backup ./na_data ./backups
+  nekro-agent-toolkit --backup ./na_data ./backups
   # 或者从源码运行:
   python3 app.py --backup ./na_data ./backups
   ```
@@ -84,7 +84,7 @@ python3 app.py --install ./na_data
 
 - **恢复**：使用 `-r` 或 `--recovery` 参数。需要提供备份文件和要恢复到的目标目录。
   ```bash
-  nekro-agent --recovery ./backups/na_backup_1678886400.tar.zstd ./na_data_new
+  nekro-agent-toolkit --recovery ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   # 或者从源码运行:
   python3 app.py --recovery ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   ```
@@ -92,7 +92,7 @@ python3 app.py --install ./na_data
 
 - **恢复并安装**：使用 `-ri` 或 `--recover-install` 参数。此命令会先执行恢复，然后在恢复的数据之上继续执行安装流程（如下载 `docker-compose.yml`，拉取镜像等）。
   ```bash
-  nekro-agent --recover-install ./backups/na_backup_1678886400.tar.zstd ./na_data_new
+  nekro-agent-toolkit --recover-install ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   # 或者从源码运行:
   python3 app.py --recover-install ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   ```
@@ -134,4 +134,4 @@ python3 app.py --install ./na_data
 
 ## 许可证
 
-请参考 [Nekro Agent 项目](https://github.com/KroMiose/nekro-agent) 获取许可证信息。
+请参考 [Nekro Agent 项目](https://github.com/KroMiose/nekro-agent) 获取许可证信息和[本项目](./LICENSE)。
