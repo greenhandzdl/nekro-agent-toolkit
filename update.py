@@ -7,7 +7,21 @@ from utils.helpers import command_exists, get_docker_compose_cmd
 from utils.update_utils import update_nekro_agent_only, update_all_services
 
 def main():
-    parser = argparse.ArgumentParser(description="Nekro Agent 更新工具")
+    parser = argparse.ArgumentParser(
+        description="Nekro Agent 更新工具",
+        epilog=(
+            "用法示例:\n"
+            "  python update.py\n"
+            "    # 在当前目录更新 Nekro Agent (推荐方式)\n\n"
+            "  python update.py /srv/nekro\n"
+            "    # 更新位于 /srv/nekro 的 Nekro Agent\n\n"
+            "  python update.py --all\n"
+            "    # 在默认目录更新所有服务 (包括数据库等)\n\n"
+            "  python update.py /srv/nekro --all\n"
+            "    # 组合使用：在指定目录更新所有服务"
+        ),
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument("nekro_data_dir", nargs="?", default=os.getcwd(),
                         help="Nekro Agent 数据目录 (默认为当前目录)")
     parser.add_argument("--all", action="store_true",
@@ -37,7 +51,7 @@ def main():
         print(f"警告: 目录 '{args.nekro_data_dir}' 中未找到 docker-compose.yml 文件。")
         response = input("是否继续更新? (y/N): ")
         if response.lower() != 'y':
-            print("取消更新。\n")
+            print("取消更新。")
             sys.exit(0)
     
     # 执行相应的更新操作
