@@ -1,71 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
 import sys
 
-def command_exists(command):
-    """检查指定命令是否存在于系统中。"""
-    return subprocess.run(f"which {command}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
-
-def get_docker_compose_cmd():
-    """确定要使用的正确 docker-compose 命令（v1 或 v2）。"""
-    if command_exists("docker-compose"):
-        return "docker-compose"
-    try:
-        subprocess.run("docker compose version", shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return "docker compose"
-    except subprocess.CalledProcessError:
-        return None
-
-def run_sudo_command(command, description):
-    """使用 sudo 运行命令并处理可能出现的错误。"""
-    print(f"正在执行: {description}")
-    try:
-        subprocess.run(f"sudo {command}", shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"错误: {description} 失败。\n{e}", file=sys.stderr)
-        sys.exit(1)
-    except FileNotFoundError:
-        print("错误: 'sudo' 命令未找到。请确保您有管理员权限。", file=sys.stderr)
-        sys.exit(1)
-
-def update_nekro_agent_only(docker_compose_cmd, nekro_data_dir):
-    """仅更新 Nekro Agent 和沙盒镜像 (推荐)"""
-    print("正在执行更新方式一：仅更新 Nekro Agent 和沙盒镜像")
-    
-    os.chdir(nekro_data_dir)
-    
-    # 检查 .env 文件是否存在
-    if not os.path.exists(".env"):
-        print("错误: .env 文件不存在，请检查 Nekro Agent 是否已正确安装。", file=sys.stderr)
-        sys.exit(1)
-    
-    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", 
-                     "拉取最新的 kromiose/nekro-agent-sandbox 镜像")
-    
-    run_sudo_command(f"{docker_compose_cmd} --env-file .env pull nekro_agent", 
-                     "拉取最新的 nekro_agent 镜像")
-    
-    run_sudo_command(f"{docker_compose_cmd} --env-file .env up --build -d nekro_agent", 
-                     "重新构建并启动 nekro_agent 容器")
-
-def update_all_services(docker_compose_cmd, nekro_data_dir):
-    """更新所有镜像并重启容器"""
-    print("正在执行更新方式二：更新所有镜像并重启容器")
-    
-    os.chdir(nekro_data_dir)
-    
-    # 检查 .env 文件是否存在
-    if not os.path.exists(".env"):
-        print("错误: .env 文件不存在，请检查 Nekro Agent 是否已正确安装。", file=sys.stderr)
-        sys.exit(1)
-    
-    run_sudo_command(f"{docker_compose_cmd} --env-file .env pull", 
-                     "拉取所有服务的最新镜像")
-    
-    run_sudo_command(f"{docker_compose_cmd} --env-file .env up --build -d", 
-                     "重新构建并启动所有服务")
+from utils.helpers import command_exists, get_docker_compose_cmd
+from utils.update_utils import update_nekro_agent_only, update_all_services
 
 def main():
     parser = argparse.ArgumentParser(description="Nekro Agent 更新工具")
@@ -98,7 +37,7 @@ def main():
         print(f"警告: 目录 '{args.nekro_data_dir}' 中未找到 docker-compose.yml 文件。")
         response = input("是否继续更新? (y/N): ")
         if response.lower() != 'y':
-            print("取消更新。")
+            print("取消更新。\n")
             sys.exit(0)
     
     # 执行相应的更新操作
