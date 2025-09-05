@@ -126,9 +126,17 @@ def run_docker_operations(docker_compose_cmd, env_path):
         env_path (str): .env 文件的路径，用于 docker-compose 的 --env-file 参数。
     """
     env_file_arg = f"--env-file {env_path}"
-    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} pull", "拉取服务镜像")
-    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} up -d", "启动主服务")
-    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", "拉取沙盒镜像")
+    
+    # 准备 Docker 环境
+    docker_env = {}
+    docker_host = os.environ.get('DOCKER_HOST')
+    if docker_host and docker_host.startswith('/'):
+        print(f"检测到 DOCKER_HOST='{docker_host}'，将自动修正为 'unix://{docker_host}'")
+        docker_env['DOCKER_HOST'] = f"unix://{docker_host}"
+
+    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} pull", "拉取服务镜像", env=docker_env)
+    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} up -d", "启动主服务", env=docker_env)
+    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", "拉取沙盒镜像", env=docker_env)
 
 def configure_firewall(env_path, with_napcat):
     """如果 ufw 防火墙存在，则为其配置端口转发规则。

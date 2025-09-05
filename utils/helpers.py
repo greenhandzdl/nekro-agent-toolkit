@@ -45,28 +45,42 @@ def get_docker_compose_cmd():
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
 
-def run_sudo_command(command, description):
+def run_sudo_command(command, description, env=None):
     """尝试以当前用户权限运行命令，如果失败则使用 sudo 提权后重试。
-
-    首先会尝试直接执行命令。如果因为权限不足等问题失败，
-    会自动在该命令前加上 'sudo' 并再次尝试。
 
     参数:
         command (str): 需要执行的命令。
         description (str): 对正在执行的操作的简短描述。
+        env (dict, optional): 为命令设置的环境变量。
     """
     print(f"正在执行: {description}")
+    
+    # 准备环境
+    cmd_env = os.environ.copy()
+    if env:
+        cmd_env.update(env)
+
     try:
         # 1. 尝试直接运行
-        # 使用 DEVNULL 来抑制成功执行时的输出，只在失败时关心错误
-        subprocess.run(command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=cmd_env)
         print("使用当前用户权限执行成功。")
         return
     except subprocess.CalledProcessError:
         # 2. 如果失败，则尝试 sudo
         print("当前用户权限不足，尝试使用 sudo 提权...")
+        
+        # 构建 sudo 命令，并传递环境变量
+        sudo_command = ["sudo"]
+        if env:
+            for key, value in env.items():
+                sudo_command.append(f"{key}='{value}'")
+        
+        # 添加原始命令
+        sudo_command.extend(command.split())
+
         try:
-            subprocess.run(f"sudo {command}", shell=True, check=True)
+            # 使用列表形式的命令来避免 shell=True 带来的注入风险
+            subprocess.run(" ".join(sudo_command), shell=True, check=True)
             print("使用 sudo 提权成功。")
         except subprocess.CalledProcessError as e:
             print(f"错误: 使用 sudo 提权后，{description} 仍然失败。\n{e}", file=sys.stderr)
@@ -75,10 +89,10 @@ def run_sudo_command(command, description):
             print("错误: 'sudo' 命令未找到。请确保您有管理员权限。", file=sys.stderr)
             sys.exit(1)
     except FileNotFoundError:
-        # 如果原始命令就不存在
         cmd_name = command.split()[0]
         print(f"错误: 命令 '{cmd_name}' 未找到。", file=sys.stderr)
         sys.exit(1)
+
 
 def check_dependencies():
     """检查并确认所有必需的系统依赖（如 docker, docker-compose）都已安装。
