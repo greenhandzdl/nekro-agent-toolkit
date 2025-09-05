@@ -264,15 +264,36 @@ def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optiona
         else:
             regular_sources[source] = arcname
 
-    # 定义要排除的路径（相对于归档的根目录）
-    excluded_patterns = ['/logs', '/uploads', '/.env.example']
-
+    # 定义要排除的路径和文件模式
     def exclude_filter(tarinfo: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
         """Tarfile filter to exclude specific files/directories."""
-        for pattern in excluded_patterns:
-            if pattern in tarinfo.name:
-                print(f"  - {_('excluding_from_archive', tarinfo.name)}")
-                return None
+        # 获取相对于归档根目录的路径
+        path = tarinfo.name
+        
+        # 分离路径和文件名
+        path_parts = path.split('/')
+        filename = os.path.basename(path)
+        
+        # 1. 过滤根目录下的 logs 文件夹
+        if len(path_parts) >= 2 and path_parts[1] == 'logs':
+            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            return None
+            
+        # 2. 过滤根目录下的 uploads 文件夹
+        if len(path_parts) >= 2 and path_parts[1] == 'uploads':
+            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            return None
+            
+        # 3. 过滤根目录下的 .env.example 文件
+        if len(path_parts) == 2 and path_parts[1] == '.env.example':
+            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            return None
+            
+        # 4. 过滤所有以 ._ 开头的文件（任何目录层级）
+        if filename.startswith('._'):
+            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            return None
+            
         return tarinfo
 
     try:
