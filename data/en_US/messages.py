@@ -149,6 +149,10 @@ MESSAGES = {
     "yes_description": "Automatically confirm all prompts to run in non-interactive mode.",
     "all_description": "Update all services, not just Nekro Agent",
     
+    # Main program description
+    "app_description": "Nekro Agent installation, update and backup unified management tool.",
+    "app_examples": "Usage examples:\n  {} --install ./na_data\n    # Install Nekro Agent in ./na_data directory\n\n  {} --update ./na_data\n    # Perform partial update on installation in specified directory\n\n  {} --upgrade ./na_data\n    # Perform complete update (upgrade) on installation in specified directory\n\n  {} --backup ./na_data ./backups\n    # Backup na_data directory to backups folder\n\n  {} --recovery ./backups/na_backup_123.tar.zstd ./na_data_new\n    # Restore from backup file to na_data_new directory\n\n  {} --recover-install ./backup.tar.zst ./restored_install\n    # Restore data from backup and run installation on top of it",
+    
     # Installation related messages
     "app_data_directory": "Application data directory (NEKRO_DATA_DIR): {}",
     "error_create_app_directory": "Error: Cannot create application directory {}. Please check permissions.\n{}",

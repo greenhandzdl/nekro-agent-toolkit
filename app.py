@@ -17,22 +17,8 @@ def main():
     cmd_prefix = get_command_prefix()
     
     parser = argparse.ArgumentParser(
-        description="Nekro Agent 安装、更新与备份的统一管理工具。",
-        epilog=(
-            "用法示例:\n"
-            f"  {cmd_prefix} --install ./na_data\n"
-            "    # 在 ./na_data 目录中安装 Nekro Agent\n\n"
-            f"  {cmd_prefix} --update ./na_data\n"
-            "    # 对指定目录的安装执行部分更新\n\n"
-            f"  {cmd_prefix} --upgrade ./na_data\n"
-            "    # 对指定目录的安装执行完全更新（升级）\n\n"
-            f"  {cmd_prefix} --backup ./na_data ./backups\n"
-            "    # 备份 na_data 目录到 backups 文件夹\n\n"
-            f"  {cmd_prefix} --recovery ./backups/na_backup_123.tar.zstd ./na_data_new\n"
-            "    # 从备份文件恢复到 na_data_new 目录\n\n"
-            f"  {cmd_prefix} --recover-install ./backup.tar.zst ./restored_install\n"
-            "    # 从备份恢复数据，并在此基础上执行安装"
-        ),
+        description=_('app_description'),
+        epilog=_('app_examples', cmd_prefix, cmd_prefix, cmd_prefix, cmd_prefix, cmd_prefix, cmd_prefix),
         formatter_class=argparse.RawTextHelpFormatter
     )
 

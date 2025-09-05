@@ -149,6 +149,10 @@ MESSAGES = {
     "yes_description": "自动确认所有提示，以非交互模式运行。",
     "all_description": "更新所有服务，而不仅仅是 Nekro Agent",
     
+    # 主程序描述信息
+    "app_description": "Nekro Agent 安装、更新与备份的统一管理工具。",
+    "app_examples": "用法示例:\n  {} --install ./na_data\n    # 在 ./na_data 目录中安装 Nekro Agent\n\n  {} --update ./na_data\n    # 对指定目录的安装执行部分更新\n\n  {} --upgrade ./na_data\n    # 对指定目录的安装执行完全更新（升级）\n\n  {} --backup ./na_data ./backups\n    # 备份 na_data 目录到 backups 文件夹\n\n  {} --recovery ./backups/na_backup_123.tar.zstd ./na_data_new\n    # 从备份文件恢复到 na_data_new 目录\n\n  {} --recover-install ./backup.tar.zst ./restored_install\n    # 从备份恢复数据，并在此基础上执行安装",
+    
     # 安装相关消息
     "app_data_directory": "应用数据目录 (NEKRO_DATA_DIR): {}",
     "error_create_app_directory": "错误: 无法创建应用目录 {}。请检查权限。\n{}",

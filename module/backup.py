@@ -117,7 +117,7 @@ def recover_agent(backup_file: str, data_dir: str, non_interactive: bool = False
 def get_user_confirmation() -> bool:
     """获取用户的确认。"""
     try:
-        response = input("是否继续？ (y/N): ")
+        response = input(_('confirm_continue'))
         if response.lower() != 'y':
             print(_("operation_cancelled"))
             return False

@@ -84,12 +84,12 @@ def confirm_installation():
     """
     print(f"\n{_('check_env_config')}")
     try:
-        yn = input("确认是否继续安装？[Y/n] ")
+        yn = input(_('confirm_installation'))
         if yn.lower() not in ['', 'y', 'yes']:
-            print("安装已取消。")
+            print(_('installation_cancelled'))
             sys.exit(0)
     except (EOFError, KeyboardInterrupt):
-        print("\n安装已取消。")
+        print(f"\n{_('installation_cancelled')}")
         sys.exit(0)
 
 def download_compose_file(with_napcat_arg):
