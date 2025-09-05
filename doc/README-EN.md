@@ -89,45 +89,37 @@ nekro-agent-toolkit --set-data
 
 #### Using Default Directory
 
-After setting the default directory, you can simplify command line operations:
+After setting the default directory, all major commands support simplified operations:
 
 ```bash
-# Auto install (equivalent to -i <default_directory>)
+# Install (equivalent to -i <default_directory>)
 nekro-agent-toolkit -i
 
-# Auto backup (equivalent to -b <default_directory> backup)
+# Update (equivalent to -u <default_directory>)
+nekro-agent-toolkit -u
+
+# Upgrade (equivalent to -ua <default_directory>)
+nekro-agent-toolkit -ua
+
+# Backup (equivalent to -b <default_directory> backup)
 nekro-agent-toolkit -b ./backup
 
-# Auto recovery (equivalent to -r backup.tar.zstd <default_directory>)
+# Recovery (equivalent to -r backup.tar.zstd <default_directory>)
 nekro-agent-toolkit -r ./backup.tar.zstd
+
+# Recover and Install (equivalent to -ri backup.tar.zstd <default_directory>)
+nekro-agent-toolkit -ri ./backup.tar.zstd
 ```
 
-#### User Confirmation Mechanism
+#### Confirmation & Clearing
 
-When using the default directory, the system will display the equivalent command and ask for confirmation:
+**Confirmation**: Shows equivalent command when using default directory
 
-```
-Detected default data directory: ./na_data
-Use default directory? This is equivalent to running: nekro-agent-toolkit -i ./na_data
-Continue? (y/N):
-```
+**Clear Setting**: Enter 'clear' when viewing to clear default setting
 
-#### Clearing Default Setting
+**Parameter Format**: Supports `-sd` and `--set-data`, not `--sd`
 
-When viewing the current setting, you can interactively clear the default setting:
-
-```
-Current default data directory: ./na_data
-Enter 'clear' to clear default data directory setting: clear
-Default data directory cleared.
-```
-
-**Note:**
-- Use short parameter: `-sd`
-- Use full long parameter: `--set-data`
-- Abbreviated long parameter `--sd` is not supported
-
-Configuration files are stored in `~/.config/.nekro-agent-toolkit/default_data_dir`, following XDG Base Directory specification.
+**Configuration Storage**: `~/.config/.nekro-agent-toolkit/default_data_dir` (XDG spec)
 
 ### 🛡️ Smart Backup Filtering
 
