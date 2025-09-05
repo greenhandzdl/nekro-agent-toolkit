@@ -25,6 +25,9 @@ git clone https://github.com/your-repo/nekro-agent-toolkit.git
 cd nekro-agent-toolkit
 ```
 
+> [!NOTE]
+> 安装完后请看[协议端配置](https://doc.nekro.ai/docs/02_quick_start/config/protocol),[系统配置](https://doc.nekro.ai/docs/02_quick_start/config/system)注意改密码。
+
 ### 默认数据目录管理
 
 ```bash
