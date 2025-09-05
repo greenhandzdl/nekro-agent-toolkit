@@ -8,6 +8,7 @@ import sys
 import tempfile
 import json
 import platform
+from typing import Union, Optional, Dict, List
 
 from utils.helpers import command_exists
 
@@ -48,7 +49,7 @@ def create_docker_volume_if_not_exists(volume_name: str) -> bool:
             print(f"错误: 创建 Docker 卷 '{volume_name}' 失败: {e}", file=sys.stderr)
             return False
 
-def get_docker_volumes_for_recovery(volume_names: list[str]) -> dict[str, str]:
+def get_docker_volumes_for_recovery(volume_names: List[str]) -> Dict[str, str]:
     """为恢复操作获取或创建指定的 Docker 卷。
 
     在新环境中恢复时，如果 Docker 卷不存在，会自动创建它们。
@@ -91,7 +92,7 @@ def get_docker_volumes_for_recovery(volume_names: list[str]) -> dict[str, str]:
     
     return volume_info
 
-def get_docker_volumes(volume_names: list[str]) -> dict[str, str]:
+def get_docker_volumes(volume_names: List[str]) -> Dict[str, str]:
     """获取指定 Docker 卷的信息并验证其可用性。
 
     在 macOS/Windows 系统上，Docker 卷运行在虚拟机中，无法直接通过主机路径访问。
@@ -233,7 +234,7 @@ def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> b
         print(f"错误: 恢复 Docker 卷 '{volume_name}' 失败: {e}", file=sys.stderr)
         return False
 
-def create_archive(source_paths: dict[str, str], dest_path_base: str) -> str | None:
+def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optional[str]:
     """创建一个包含多个源目录的压缩归档文件。
 
     如果系统支持 zstd，则创建 .tar.zstd 文件；否则，创建 .tar 文件。
@@ -246,7 +247,7 @@ def create_archive(source_paths: dict[str, str], dest_path_base: str) -> str | N
         dest_path_base (str): 不带扩展名的目标归档文件基础路径。
 
     Returns:
-        str | None: 成功则返回最终的归档文件路径，否则返回 None。
+        Optional[str]: 成功则返回最终的归档文件路径，否则返回 None。
     """
     tar_path = f"{dest_path_base}.tar"
     
@@ -265,7 +266,7 @@ def create_archive(source_paths: dict[str, str], dest_path_base: str) -> str | N
     # 定义要排除的路径（相对于归档的根目录）
     excluded_patterns = ['/logs', '/uploads', '/.env.example']
 
-    def exclude_filter(tarinfo: tarfile.TarInfo) -> tarfile.TarInfo | None:
+    def exclude_filter(tarinfo: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
         """Tarfile filter to exclude specific files/directories."""
         for pattern in excluded_patterns:
             if pattern in tarinfo.name:
@@ -322,7 +323,7 @@ def create_archive(source_paths: dict[str, str], dest_path_base: str) -> str | N
             os.remove(tar_path)
         return None
 
-def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: dict[str, str] | None = None) -> bool:
+def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Optional[Dict[str, str]] = None) -> bool:
     """解压归档文件，区分数据目录和 Docker 卷。
 
     Args:
@@ -425,7 +426,7 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: dict[s
         shutil.rmtree(temp_extract_dir)
 
 
-def get_archive_root_dir(archive_path: str, inspect_path: str | None = None) -> str | None:
+def get_archive_root_dir(archive_path: str, inspect_path: Optional[str] = None) -> Optional[str]:
     """读取归档文件并返回其中主要的顶层目录名（非 'volumes'）。"""
     temp_tar_path = None
     tar_to_inspect = None

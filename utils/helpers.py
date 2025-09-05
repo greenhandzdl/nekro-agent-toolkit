@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 import urllib.request
+from typing import Optional
 
 from conf.settings import BASE_URLS
 from utils.i18n import get_message as _
@@ -156,14 +157,14 @@ def command_exists(command):
     """
     return shutil.which(command) is not None
 
-def get_docker_compose_cmd():
+def get_docker_compose_cmd() -> Optional[str]:
     """确定要使用的正确 docker-compose 命令（v1 或 v2）。
 
     检查系统中是否存在 'docker-compose' (v1) 或 'docker compose' (v2)，
     并返回可用的命令。
 
     返回:
-        str | None: 如果找到，返回 'docker-compose' 或 'docker compose' 字符串；
+        Optional[str]: 如果找到，返回 'docker-compose' 或 'docker compose' 字符串；
                     如果两者都未找到，则返回 None。
     """
     if command_exists("docker-compose"):
