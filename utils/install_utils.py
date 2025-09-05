@@ -110,7 +110,7 @@ def download_compose_file(with_napcat_arg):
             if yn.lower() in ['', 'y', 'yes']:
                 with_napcat = True
         except (EOFError, KeyboardInterrupt):
-            print(f"\n{_("default_no_napcat")}")  
+            print(f"\n{_('default_no_napcat')}")  
 
     compose_filename = "docker-compose-x-napcat.yml" if with_napcat else "docker-compose.yml"
     print(_("getting_compose_file", compose_filename))
@@ -150,7 +150,7 @@ def configure_firewall(env_path, with_napcat):
         return
 
     nekro_port = get_env_value(env_path, "NEKRO_EXPOSE_PORT") or "8021"
-    print(f"\n{_("nekro_agent_needs_port", nekro_port)}")
+    print(f"\n{_('nekro_agent_needs_port', nekro_port)}")
     if with_napcat:
         napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
         print(_("napcat_needs_port", napcat_port))

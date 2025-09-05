@@ -38,7 +38,7 @@ def backup_agent(data_dir: str, backup_dir: str):
         source_paths[data_dir] = arcname
 
     # 2. 获取并添加 Docker 卷路径
-    print(f"\n{_("finding_docker_volumes_backup")}")
+    print(f"\n{_('finding_docker_volumes_backup')}")
     volume_paths = get_docker_volumes(DOCKER_VOLUMES_TO_BACKUP)
     for name, path_or_method in volume_paths.items():
         if path_or_method == "container_backup":
@@ -60,14 +60,14 @@ def backup_agent(data_dir: str, backup_dir: str):
     dest_path_base = os.path.join(backup_dir, backup_filename_base)
 
     # 4. 执行备份
-    print(f"\n{_("creating_archive")}")
+    print(f"\n{_('creating_archive')}")
     final_archive_path = create_archive(source_paths, dest_path_base)
 
     if final_archive_path:
-        print(f"\n{_("backup_success")}")
+        print(f"\n{_('backup_success')}")
         print(final_archive_path)
     else:
-        print(f"\n{_("recovery_failed")}")
+        print(f"\n{_('recovery_failed')}")
 
 def recover_agent(backup_file: str, data_dir: str, non_interactive: bool = False):
     """从备份文件恢复 Nekro Agent 数据和 Docker 卷。"""
@@ -123,7 +123,7 @@ def get_user_confirmation() -> bool:
             return False
         return True
     except (EOFError, KeyboardInterrupt):
-        print(f"\n{_("operation_cancelled")}")
+        print(f"\n{_('operation_cancelled')}")
         return False
 
 def recover_and_install_agent(backup_file: str, install_dir: str, **kwargs):

@@ -38,7 +38,7 @@ def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive:
                 print(_("update_cancelled"))
                 return
         except (EOFError, KeyboardInterrupt):
-            print(f"\n{_("update_cancelled")}")
+            print(f"\n{_('update_cancelled')}")
             return
     
     # 执行相应的更新操作
@@ -47,7 +47,7 @@ def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive:
     else:
         update_nekro_agent_only(docker_compose_cmd, nekro_data_dir)
     
-    print(f"\n{_("update_complete")}")
+    print(f"\n{_('update_complete')}")
 
 def main():
     """主更新脚本的协调器，负责解析命令行参数并调用更新逻辑。"""

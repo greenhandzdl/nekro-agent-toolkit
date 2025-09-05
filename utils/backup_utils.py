@@ -30,20 +30,20 @@ def create_docker_volume_if_not_exists(volume_name: str) -> bool:
             text=True,
             check=True
         )
-        print(f"  - {_("docker_volume_exists", volume_name)}")
+        print(f"  - {_('docker_volume_exists', volume_name)}")
         return True
         
     except subprocess.CalledProcessError:
         # 卷不存在，尝试创建它
         try:
-            print(f"  - {_("creating_docker_volume", volume_name)}")
+            print(f"  - {_('creating_docker_volume', volume_name)}")
             subprocess.run(
                 ["docker", "volume", "create", volume_name],
                 capture_output=True,
                 text=True,
                 check=True
             )
-            print(f"  - {_("docker_volume_created", volume_name)}")
+            print(f"  - {_('docker_volume_created', volume_name)}")
             return True
             
         except subprocess.CalledProcessError as e:
