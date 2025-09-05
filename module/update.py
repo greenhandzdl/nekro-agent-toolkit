@@ -52,26 +52,16 @@ def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive:
 def main():
     """主更新脚本的协调器，负责解析命令行参数并调用更新逻辑。"""
     parser = argparse.ArgumentParser(
-        description="Nekro Agent 更新工具",
-        epilog=(
-            "用法示例:\n"
-            "  python update.py\n"
-            "    # 在当前目录更新 Nekro Agent (推荐方式)\n\n"
-            "  python update.py /srv/nekro\n"
-            "    # 更新位于 /srv/nekro 的 Nekro Agent\n\n"
-            "  python update.py --all\n"
-            "    # 在默认目录更新所有服务 (包括数据库等)\n\n"
-            "  python update.py /srv/nekro --all\n"
-            "    # 组合使用：在指定目录更新所有服务"
-        ),
+        description=_('update_module_description'),
+        epilog=_('update_module_examples'),
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument("nekro_data_dir", nargs="?", default=os.getcwd(),
-                        help="Nekro Agent 数据目录 (默认为当前目录)")
+                        help=_('update_module_data_dir_help'))
     parser.add_argument("--all", action="store_true",
-                        help="更新所有服务，而不仅仅是 Nekro Agent")
+                        help=_('update_module_all_help'))
     parser.add_argument('-y', '--yes', action='store_true', 
-                        help='自动确认所有提示，以非交互模式运行。')
+                        help=_('update_module_yes_help'))
     
     args = parser.parse_args()
     

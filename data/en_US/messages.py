@@ -249,8 +249,27 @@ MESSAGES = {
     
     # Docker volume dynamic discovery related messages
     "discovered_docker_volumes": "Dynamically discovered {} matching Docker volumes",
-    "no_matching_volumes_using_static": "No matching Docker volumes found, using static configuration: {}",
-    "found_matching_docker_volume": "Found matching Docker volume: {} (matches suffix: {})",
-    "warning_cannot_get_volume_list": "Warning: Unable to get Docker volume list: {}",
-    "error_docker_volume_discovery_exception": "Error: Exception occurred while discovering Docker volumes: {}",
+    "no_matching_volumes_using_static": "No matching volumes found, using static configuration: {}",
+    "found_matching_docker_volume": "Found matching Docker volume: {} (suffix match: {})",
+    "warning_cannot_get_volume_list": "Warning: Cannot get Docker volume list: {}",
+    "error_docker_volume_discovery_exception": "Error: Exception occurred during Docker volume discovery: {}",
+    
+    # Module standalone help information
+    "backup_module_description": "Nekro Agent backup and recovery tool.",
+    "backup_module_help": "Backup specified data directory and related Docker volumes to target backup directory.",
+    "recovery_module_help": "Restore data and Docker volumes from specified backup file to target directory.",
+    "install_module_description": "Nekro Agent installation and management script",
+    "install_module_data_dir_help": "Nekro Agent application data directory.\nDefaults to \"na_data/\" folder in the script directory.",
+    "install_module_with_napcat_help": "Deploy NapCat service as well.",
+    "install_module_dry_run_help": "Dry run mode: only generate .env file, do not perform actual installation.",
+    "install_module_yes_help": "Automatically confirm all prompts to run in non-interactive mode.",
+    "install_module_examples": "Usage examples:\n  python install.py\n    # Create na_data/ in script directory and install\n\n  python install.py /srv/nekro\n    # Install in specified directory /srv/nekro\n\n  python install.py --with-napcat\n    # Install in default directory and enable NapCat service\n\n  python install.py /srv/nekro --dry-run\n    # Dry run in specified directory, only generate .env file\n",
+    "update_module_description": "Nekro Agent update tool",
+    "update_module_data_dir_help": "Nekro Agent data directory (defaults to current directory)",
+    "update_module_all_help": "Update all services, not just Nekro Agent",
+    "update_module_yes_help": "Automatically confirm all prompts to run in non-interactive mode.",
+    "update_module_examples": "Usage examples:\n  python update.py\n    # Update Nekro Agent in current directory (recommended)\n\n  python update.py /srv/nekro\n    # Update Nekro Agent located at /srv/nekro\n\n  python update.py --all\n    # Update all services in default directory (including databases)\n\n  python update.py /srv/nekro --all\n    # Combined usage: update all services in specified directory",
+    
+    # helpers.py related messages
+    "executing_command": "Executing: {}",
 }

@@ -253,4 +253,23 @@ MESSAGES = {
     "found_matching_docker_volume": "发现符合条件的 Docker 卷: {} (匹配后缀: {})",
     "warning_cannot_get_volume_list": "警告: 无法获取 Docker 卷列表: {}",
     "error_docker_volume_discovery_exception": "错误: 发现 Docker 卷时发生异常: {}",
+    
+    # 模块独立运行帮助信息
+    "backup_module_description": "Nekro Agent 备份与恢复工具。",
+    "backup_module_help": "备份指定的数据目录和相关 Docker 卷到目标备份目录。",
+    "recovery_module_help": "从指定的备份文件恢复数据和 Docker 卷到目标目录。",
+    "install_module_description": "Nekro Agent 安装与管理脚本",
+    "install_module_data_dir_help": "Nekro Agent 的应用数据目录。\n默认为脚本所在目录下的 \"na_data/\" 文件夹。",
+    "install_module_with_napcat_help": "同时部署 NapCat 服务。",
+    "install_module_dry_run_help": "预演模式：仅生成 .env 文件，不执行实际安装。",
+    "install_module_yes_help": "自动确认所有提示，以非交互模式运行。",
+    "install_module_examples": "用法示例:\n  python install.py\n    # 在脚本目录下创建 na_data/ 并安装\n\n  python install.py /srv/nekro\n    # 在指定目录 /srv/nekro 安装\n\n  python install.py --with-napcat\n    # 在默认目录安装，并启用 NapCat 服务\n\n  python install.py /srv/nekro --dry-run\n    # 在指定目录预演，仅生成 .env 文件\n",
+    "update_module_description": "Nekro Agent 更新工具",
+    "update_module_data_dir_help": "Nekro Agent 数据目录 (默认为当前目录)",
+    "update_module_all_help": "更新所有服务，而不仅仅是 Nekro Agent",
+    "update_module_yes_help": "自动确认所有提示，以非交互模式运行。",
+    "update_module_examples": "用法示例:\n  python update.py\n    # 在当前目录更新 Nekro Agent (推荐方式)\n\n  python update.py /srv/nekro\n    # 更新位于 /srv/nekro 的 Nekro Agent\n\n  python update.py --all\n    # 在默认目录更新所有服务 (包括数据库等)\n\n  python update.py /srv/nekro --all\n    # 组合使用：在指定目录更新所有服务",
+    
+    # helpers.py 相关消息
+    "executing_command": "正在执行: {}",
 }

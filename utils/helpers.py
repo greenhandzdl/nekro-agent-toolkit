@@ -183,7 +183,7 @@ def run_sudo_command(command, description, env=None):
         description (str): 对正在执行的操作的简短描述。
         env (dict, optional): 为命令设置的环境变量。
     """
-    print(f"正在执行: {description}")
+    print(_("executing_command", description))
     
     # 准备环境
     cmd_env = os.environ.copy()

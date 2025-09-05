@@ -195,12 +195,12 @@ def recover_and_install_agent(backup_file: str, install_dir: str, **kwargs):
 
 def main():
     """备份与恢复工具的独立命令行入口。"""
-    parser = argparse.ArgumentParser(description="Nekro Agent 备份与恢复工具。" )
+    parser = argparse.ArgumentParser(description=_('backup_module_description'))
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-b', '--backup', nargs=2, metavar=('DATA_DIR', 'BACKUP_DIR'), 
-                       help='备份指定的数据目录和相关 Docker 卷到目标备份目录。')
+                       help=_('backup_module_help'))
     group.add_argument('-r', '--recovery', nargs=2, metavar=('BACKUP_FILE', 'DATA_DIR'), 
-                       help='从指定的备份文件恢复数据和 Docker 卷到目标目录。')
+                       help=_('recovery_module_help'))
 
     args = parser.parse_args()
 

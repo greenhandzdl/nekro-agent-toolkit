@@ -52,28 +52,18 @@ def main():
     default_data_dir = os.path.join(script_dir, "na_data")
     
     parser = argparse.ArgumentParser(
-        description="Nekro Agent 安装与管理脚本",
-        epilog=(
-            "用法示例:\n"
-            "  python install.py\n"
-            "    # 在脚本目录下创建 na_data/ 并安装\n\n"
-            "  python install.py /srv/nekro\n"
-            "    # 在指定目录 /srv/nekro 安装\n\n"
-            "  python install.py --with-napcat\n"
-            "    # 在默认目录安装，并启用 NapCat 服务\n\n"
-            "  python install.py /srv/nekro --dry-run\n"
-            "    # 在指定目录预演，仅生成 .env 文件\n"
-        ),
+        description=_('install_module_description'),
+        epilog=_('install_module_examples'),
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument('nekro_data_dir', nargs='?', default=default_data_dir, 
-                        help='Nekro Agent 的应用数据目录。\n默认为脚本所在目录下的 \"na_data/\" 文件夹。')
+                        help=_('install_module_data_dir_help'))
     parser.add_argument('--with-napcat', action='store_true', 
-                        help='同时部署 NapCat 服务。')
+                        help=_('install_module_with_napcat_help'))
     parser.add_argument('--dry-run', action='store_true', 
-                        help='预演模式：仅生成 .env 文件，不执行实际安装。')
+                        help=_('install_module_dry_run_help'))
     parser.add_argument('-y', '--yes', action='store_true', 
-                        help='自动确认所有提示，以非交互模式运行。')
+                        help=_('install_module_yes_help'))
     
     args = parser.parse_args()
 
