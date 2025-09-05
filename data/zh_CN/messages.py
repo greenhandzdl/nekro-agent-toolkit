@@ -272,4 +272,14 @@ MESSAGES = {
     
     # helpers.py 相关消息
     "executing_command": "正在执行: {}",
+    
+    # 默认数据目录相关消息
+    "set_data_description": "设置或清除默认数据目录。",
+    "default_data_dir_set": "默认数据目录已设置为: {}",
+    "default_data_dir_cleared": "默认数据目录已清除。",
+    "current_default_data_dir": "当前默认数据目录: {}",
+    "no_default_data_dir": "未设置默认数据目录。",
+    "confirm_use_default_data_dir": "检测到默认数据目录: {}\n是否使用默认目录？这等效于运行: {}\n继续？ (y/N): ",
+    "clear_default_data_dir_prompt": "输入 'clear' 以清除默认数据目录设置: ",
+    "clear_cancelled": "清除操作已取消。",
 }

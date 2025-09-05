@@ -16,6 +16,89 @@ from typing import Optional
 from conf.install_settings import BASE_URLS
 from utils.i18n import get_message as _
 
+# --- 默认数据目录管理 ---
+
+def get_default_data_dir_config_path():
+    """获取默认数据目录配置文件的路径。
+    
+    返回:
+        str: 配置文件的绝对路径
+    """
+    # 使用XDG Base Directory规范，将配置存放在~/.config/.nekro-agent-toolkit目录
+    config_dir = os.path.expanduser("~/.config/.nekro-agent-toolkit")
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir, exist_ok=True)
+    return os.path.join(config_dir, "default_data_dir")
+
+def set_default_data_dir(path: Optional[str] = None):
+    """设置或清除默认数据目录。
+    
+    参数:
+        path (Optional[str]): 要设置的默认数据目录路径。如果为 None 或空字符串，则清除默认设置。
+    """
+    config_path = get_default_data_dir_config_path()
+    
+    if not path or path.strip() == "":
+        # 清除默认目录
+        if os.path.exists(config_path):
+            os.remove(config_path)
+        print(_("default_data_dir_cleared"))
+    else:
+        # 设置默认目录
+        abs_path = os.path.abspath(path.strip())
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(abs_path + '\n')
+        print(_("default_data_dir_set", abs_path))
+
+def get_default_data_dir() -> Optional[str]:
+    """获取当前设置的默认数据目录。
+    
+    返回:
+        Optional[str]: 如果已设置默认数据目录，返回其路径；否则返回 None。
+    """
+    config_path = get_default_data_dir_config_path()
+    if os.path.exists(config_path):
+        with open(config_path, 'r', encoding='utf-8') as f:
+            path = f.read().strip()
+            if path:
+                return path
+    return None
+
+def show_default_data_dir():
+    """显示当前的默认数据目录设置。"""
+    default_dir = get_default_data_dir()
+    if default_dir:
+        print(_("current_default_data_dir", default_dir))
+        # 提供交互式清除选项
+        try:
+            response = input(_("clear_default_data_dir_prompt"))
+            if response.lower() == 'clear':
+                set_default_data_dir('')
+            else:
+                print(_("clear_cancelled"))
+        except (KeyboardInterrupt, EOFError):
+            print("\n" + _("clear_cancelled"))
+    else:
+        print(_("no_default_data_dir"))
+
+def confirm_use_default_data_dir(command_name: str, equivalent_command: str) -> bool:
+    """询问用户是否使用默认数据目录。
+    
+    参数:
+        command_name (str): 命令名称（如 "install", "backup", "recovery"）
+        equivalent_command (str): 等效的完整命令
+        
+    返回:
+        bool: 如果用户确认使用默认目录返回 True，否则返回 False。
+    """
+    default_dir = get_default_data_dir()
+    if not default_dir:
+        return False
+        
+    response = input(_("confirm_use_default_data_dir", default_dir, equivalent_command))
+    return response.lower() in ['y', 'yes', '是', '确认']
+
+
 # --- 系统与命令 ---
 
 def is_running_from_source():

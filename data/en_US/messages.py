@@ -272,4 +272,14 @@ MESSAGES = {
     
     # helpers.py related messages
     "executing_command": "Executing: {}",
+    
+    # Default data directory related messages
+    "set_data_description": "Set or clear the default data directory.",
+    "default_data_dir_set": "Default data directory set to: {}",
+    "default_data_dir_cleared": "Default data directory cleared.",
+    "current_default_data_dir": "Current default data directory: {}",
+    "no_default_data_dir": "No default data directory set.",
+    "confirm_use_default_data_dir": "Detected default data directory: {}\nUse default directory? This is equivalent to running: {}\nContinue? (y/N): ",
+    "clear_default_data_dir_prompt": "Enter 'clear' to clear default data directory setting: ",
+    "clear_cancelled": "Clear operation cancelled.",
 }

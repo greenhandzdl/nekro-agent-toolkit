@@ -19,6 +19,7 @@ Nekro Agent is a Docker-based application that can be used with QQ bots. This in
 - Version information display (Git SHA for source, package version for pip installs)
 - **Multi-language interface support** (Chinese/English auto-switching)
 - **Smart backup filtering** (excludes logs, uploads, temporary files)
+- **Default data directory management** (simplified command operations)
 
 ## System Requirements
 
@@ -64,6 +65,69 @@ LANG=zh_CN.UTF-8 nekro-agent-toolkit --help
 # English environment  
 LANG=en_US.UTF-8 nekro-agent-toolkit --help
 ```
+
+### ⚙️ Default Data Directory Management
+
+To simplify repetitive operations, the tool provides default data directory management:
+
+#### Setting Default Data Directory
+
+```bash
+# Set default data directory
+nekro-agent-toolkit --set-data ./na_data
+
+# Or use short parameter
+nekro-agent-toolkit -sd ./na_data
+
+# Check current setting (will prompt to clear)
+nekro-agent-toolkit -sd
+# or
+nekro-agent-toolkit --set-data
+
+# Enter 'clear' when viewing to clear default setting
+```
+
+#### Using Default Directory
+
+After setting the default directory, you can simplify command line operations:
+
+```bash
+# Auto install (equivalent to -i <default_directory>)
+nekro-agent-toolkit -i
+
+# Auto backup (equivalent to -b <default_directory> backup)
+nekro-agent-toolkit -b ./backup
+
+# Auto recovery (equivalent to -r backup.tar.zstd <default_directory>)
+nekro-agent-toolkit -r ./backup.tar.zstd
+```
+
+#### User Confirmation Mechanism
+
+When using the default directory, the system will display the equivalent command and ask for confirmation:
+
+```
+Detected default data directory: ./na_data
+Use default directory? This is equivalent to running: nekro-agent-toolkit -i ./na_data
+Continue? (y/N):
+```
+
+#### Clearing Default Setting
+
+When viewing the current setting, you can interactively clear the default setting:
+
+```
+Current default data directory: ./na_data
+Enter 'clear' to clear default data directory setting: clear
+Default data directory cleared.
+```
+
+**Note:**
+- Use short parameter: `-sd`
+- Use full long parameter: `--set-data`
+- Abbreviated long parameter `--sd` is not supported
+
+Configuration files are stored in `~/.config/.nekro-agent-toolkit/default_data_dir`, following XDG Base Directory specification.
 
 ### 🛡️ Smart Backup Filtering
 
