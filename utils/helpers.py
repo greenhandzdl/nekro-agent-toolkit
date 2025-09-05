@@ -16,6 +16,134 @@ from conf.settings import BASE_URLS
 
 # --- 系统与命令 ---
 
+def is_running_from_source():
+    """检查当前是否从源码运行还是从已安装的包运行。
+    
+    返回:
+        bool: 如果从源码运行返回 True，如果从已安装的包运行返回 False。
+    """
+    # 获取当前脚本的绝对路径
+    current_script = os.path.abspath(sys.argv[0])
+    script_name = os.path.basename(current_script)
+    
+    # 1. 最直接的判断：如果命令名称就是 nekro-agent-toolkit，肯定是安装版本
+    if script_name == 'nekro-agent-toolkit':
+        return False
+    
+    # 2. 检查脚本路径是否包含典型的安装路径
+    installed_indicators = [
+        '.local/bin/',        # pipx 安装路径
+        'site-packages/',     # pip 安装路径
+        '/usr/bin/',         # 系统安装路径
+        '/usr/local/bin/',   # 本地安装路径
+    ]
+    for indicator in installed_indicators:
+        if indicator in current_script:
+            return False
+    
+    # 3. 如果脚本名称为 app.py，很可能是从源码运行
+    if script_name == 'app.py':
+        return True
+    
+    # 4. 检查当前工作目录是否包含项目源码文件
+    current_dir = os.getcwd()
+    source_indicators = [
+        'setup.py',        # Python 包设置文件
+        'pyproject.toml',  # 现代 Python 包配置
+        'app.py',          # 主入口文件
+        'module',          # 项目模块目录
+        'utils',           # 工具目录
+        'conf'             # 配置目录
+    ]
+    
+    source_file_count = sum(1 for indicator in source_indicators 
+                           if os.path.exists(os.path.join(current_dir, indicator)))
+    
+    # 如果有4个或以上的源码指标文件，很可能是从源码运行
+    if source_file_count >= 4:
+        return True
+    
+    # 5. 检查脚本所在目录是否包含源码文件
+    script_dir = os.path.dirname(current_script)
+    if script_dir and script_dir != '/usr/bin' and script_dir != '/usr/local/bin':
+        script_dir_source_count = sum(1 for indicator in source_indicators 
+                                     if os.path.exists(os.path.join(script_dir, indicator)))
+        if script_dir_source_count >= 3:
+            return True
+    
+    # 6. 特殊情况：交互式运行或测试（sys.argv[0] 为 '-c' 或类似）
+    if script_name in ['-c', '<stdin>', '<string>']:
+        # 基于当前工作目录判断
+        return source_file_count >= 3
+    
+    # 默认假设是安装版本（更保守的判断）
+    return False
+
+def get_version_info():
+    """获取版本信息。
+    
+    根据运行环境返回不同的版本信息：
+    - 源码运行：显示 Git SHA
+    - 包安装运行：显示版本号
+    
+    返回:
+        str: 版本信息字符串
+    """
+    if is_running_from_source():
+        # 从源码运行，尝试获取 Git SHA
+        try:
+            # 尝试获取当前的 Git commit SHA
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"], 
+                capture_output=True, 
+                text=True,
+                cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            )
+            if result.returncode == 0:
+                sha = result.stdout.strip()[:8]  # 只取前8位
+                
+                # 检查是否有未提交的更改
+                status_result = subprocess.run(
+                    ["git", "status", "--porcelain"],
+                    capture_output=True,
+                    text=True,
+                    cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                )
+                dirty = " (dirty)" if status_result.stdout.strip() else ""
+                
+                return f"nekro-agent-toolkit (源码) {sha}{dirty}"
+            else:
+                return "nekro-agent-toolkit (源码) unknown"
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return "nekro-agent-toolkit (源码) unknown"
+    else:
+        # 从包安装运行，返回版本号
+        try:
+            # 尝试从已安装的包获取版本（Python 3.8+ 优先使用 importlib.metadata）
+            try:
+                from importlib.metadata import version
+                pkg_version = version("nekro-agent-toolkit")
+                return f"nekro-agent-toolkit {pkg_version}"
+            except ImportError:
+                # 兼容 Python 3.7 及以下版本
+                import pkg_resources
+                pkg_version = pkg_resources.get_distribution("nekro-agent-toolkit").version
+                return f"nekro-agent-toolkit {pkg_version}"
+        except Exception:
+            # 如果无法获取已安装版本，回退到硬编码版本
+            return "nekro-agent-toolkit 1.0.3"
+
+def get_command_prefix():
+    """获取当前运行环境的命令前缀。
+    
+    返回:
+        str: 'python3 app.py' (源码运行) 或 'nekro-agent-toolkit' (包安装)
+    """
+    if is_running_from_source():
+        return "python3 app.py"
+    else:
+        return "nekro-agent-toolkit"
+
 def command_exists(command):
     """检查指定命令是否存在于系统的 PATH 中。
 
