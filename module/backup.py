@@ -9,7 +9,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from utils.backup_utils import create_archive, extract_archive, get_archive_root_dir, get_docker_volumes
+from utils.backup_utils import create_archive, extract_archive, get_archive_root_dir, get_docker_volumes, get_docker_volumes_for_recovery
 from module.install import install_agent
 
 # 定义需要备份的 Docker 卷
@@ -39,12 +39,14 @@ def backup_agent(data_dir: str, backup_dir: str):
     # 2. 获取并添加 Docker 卷路径
     print("\n正在查找需要备份的 Docker 卷...")
     volume_paths = get_docker_volumes(DOCKER_VOLUMES_TO_BACKUP)
-    for name, path in volume_paths.items():
-        if os.path.isdir(path):
-            # 卷在归档中将被存放在 'volumes/' 目录下
-            source_paths[path] = os.path.join('volumes', name)
-        else:
-            print(f"警告: Docker 卷 '{name}' 的路径 '{path}' 无效或不是一个目录，将跳过。", file=sys.stderr)
+    for name, path_or_method in volume_paths.items():
+        if path_or_method == "container_backup":
+            # 使用容器方式备份的卷
+            source_paths[f"volumes/{name}"] = "container_backup"
+        elif os.path.isdir(path_or_method):
+            # 直接可访问的卷路径 (Linux)
+            source_paths[path_or_method] = os.path.join('volumes', name)
+        # 如果卷不可用，get_docker_volumes 已经打印了警告
 
     if len(source_paths) == 1 and list(source_paths.keys())[0] == data_dir and not os.path.isdir(data_dir):
         # 如果只有数据目录一个源，且该目录无效，则终止
@@ -85,24 +87,27 @@ def recover_agent(backup_file: str, data_dir: str, non_interactive: bool = False
         if not get_user_confirmation():
             return False
 
-    # 1. 查找需要恢复的 Docker 卷的目标路径
-    print("\n正在查找需要恢复的 Docker 卷的目标位置...")
-    volume_mountpoints = get_docker_volumes(DOCKER_VOLUMES_TO_BACKUP)
-    if volume_mountpoints and not non_interactive:
+    # 1. 查找需要恢复的 Docker 卷
+    print("\n正在查找需要恢复的 Docker 卷...")
+    available_volumes = get_docker_volumes_for_recovery(DOCKER_VOLUMES_TO_BACKUP)
+    
+    if available_volumes and not non_interactive:
         print("警告: 将恢复以下 Docker 卷，这会覆盖卷中的现有内容:")
-        for name, path in volume_mountpoints.items():
-            print(f"  - {name} -> {path}")
+        for name in available_volumes:
+            print(f"  - {name}")
         if not get_user_confirmation():
             # 如果用户取消，可以选择只恢复数据，不恢复卷
-            print("将仅恢复数据目录，跳过 Docker 卷的恢复。" )
-            volume_mountpoints = {}
+            print("将仅恢复数据目录，跳过 Docker 卷的恢复。")
+            available_volumes = {}
 
     # 2. 执行恢复
     print("\n开始解压和恢复文件...")
+    # 传递卷名映射，extract_archive 会根据系统类型选择恢复方式
+    volume_mountpoints = {name: info for name, info in available_volumes.items()}
     if extract_archive(backup_file, data_dir, volume_mountpoints=volume_mountpoints):
         print(f"\n恢复成功！数据已恢复至: {data_dir}")
         if volume_mountpoints:
-            print("Docker 卷也已恢复。" )
+            print("Docker 卷也已恢复。")
         return True
     else:
         print("\n恢复失败。")
