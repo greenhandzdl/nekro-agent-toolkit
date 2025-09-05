@@ -13,6 +13,7 @@ import time
 import urllib.request
 
 from conf.settings import BASE_URLS
+from utils.i18n import get_message as _
 
 # --- 系统与命令 ---
 
@@ -203,16 +204,16 @@ def run_sudo_command(command, description, env=None):
         try:
             # 使用 `shell=True`，并传递合并后的环境
             subprocess.run(sudo_command, shell=True, check=True, env=cmd_env)
-            print("使用 sudo 提权成功。")
+            print(_("sudo_elevation_success"))
         except subprocess.CalledProcessError as e:
             print(f"错误: 使用 sudo 提权后，{description} 仍然失败.\n{e}", file=sys.stderr)
             sys.exit(1)
         except FileNotFoundError:
-            print("错误: 'sudo' 命令未找到。请确保您有管理员权限。", file=sys.stderr)
+            print(_("error_sudo_not_found"), file=sys.stderr)
             sys.exit(1)
     except FileNotFoundError:
         cmd_name = command.split()[0]
-        print(f"错误: 命令 '{cmd_name}' 未找到。", file=sys.stderr)
+        print(_("error_command_not_found", cmd_name), file=sys.stderr)
         sys.exit(1)
 
 
@@ -224,18 +225,18 @@ def check_dependencies():
     返回:
         str: 可用的 docker-compose 命令（'docker-compose' 或 'docker compose'）。
     """
-    print("正在检查依赖...")
+    print(_("checking_dependencies"))
     if not command_exists("docker"):
-        print("错误: 命令 'docker' 未找到，请先安装后再运行。", file=sys.stderr)
+        print(_("error_docker_not_found"), file=sys.stderr)
         sys.exit(1)
 
     docker_compose_cmd = get_docker_compose_cmd()
     if not docker_compose_cmd:
-        print("错误: 'docker-compose' 或 'docker compose' 未找到，请先安装后再运行。", file=sys.stderr)
+        print(_("error_docker_compose_not_found"), file=sys.stderr)
         sys.exit(1)
     
-    print("依赖检查通过。")
-    print(f"使用 '{docker_compose_cmd}' 作为 docker-compose 命令。")
+    print(_("dependencies_check_passed"))
+    print(_("using_docker_compose_cmd", docker_compose_cmd))
     return docker_compose_cmd
 
 # --- 网络 ---

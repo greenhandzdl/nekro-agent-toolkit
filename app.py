@@ -9,6 +9,7 @@ from module.install import install_agent
 from module.update import update_agent
 from module.backup import backup_agent, recover_agent, recover_and_install_agent
 from utils.helpers import get_command_prefix, get_version_info
+from utils.i18n import get_message as _
 
 
 def main():
@@ -36,20 +37,20 @@ def main():
     )
 
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-i', '--install', metavar='PATH', help='安装 Nekro Agent 到指定路径。')
-    group.add_argument('-u', '--update', metavar='PATH', help='对指定路径的安装执行部分更新。')
-    group.add_argument('-ua', '--upgrade', metavar='PATH', help='对指定路径的安装执行完全更新（升级）。')
-    group.add_argument('-b', '--backup', nargs=2, metavar=('DATA_DIR', 'BACKUP_DIR'), help='备份数据目录到指定文件夹。')
-    group.add_argument('-r', '--recovery', nargs=2, metavar=('BACKUP_FILE', 'DATA_DIR'), help='从备份文件恢复到指定数据目录。')
-    group.add_argument('-ri', '--recover-install', nargs=2, metavar=('BACKUP_FILE', 'INSTALL_DIR'), help='恢复并安装。这会解压备份文件到目标目录，然后在此之上运行安装流程。')
-    group.add_argument('-v', '--version', action='store_true', help='显示版本信息。')
+    group.add_argument('-i', '--install', metavar='PATH', help=_('install_description'))
+    group.add_argument('-u', '--update', metavar='PATH', help=_('update_description'))
+    group.add_argument('-ua', '--upgrade', metavar='PATH', help=_('upgrade_description'))
+    group.add_argument('-b', '--backup', nargs=2, metavar=('DATA_DIR', 'BACKUP_DIR'), help=_('backup_description'))
+    group.add_argument('-r', '--recovery', nargs=2, metavar=('BACKUP_FILE', 'DATA_DIR'), help=_('recovery_description'))
+    group.add_argument('-ri', '--recover-install', nargs=2, metavar=('BACKUP_FILE', 'INSTALL_DIR'), help=_('recover_install_description'))
+    group.add_argument('-v', '--version', action='store_true', help=_('version_description'))
 
     # 安装选项
-    parser.add_argument('--with-napcat', action='store_true', help='与 --install 或 --recover-install 配合使用，部署 NapCat 服务。')
-    parser.add_argument('--dry-run', action='store_true', help='与 --install 或 --recover-install 配合使用，执行预演。')
+    parser.add_argument('--with-napcat', action='store_true', help=_('with_napcat_description'))
+    parser.add_argument('--dry-run', action='store_true', help=_('dry_run_description'))
     
     #通用选项
-    parser.add_argument('-y', '--yes', action='store_true', help='自动确认所有提示，以非交互模式运行。')
+    parser.add_argument('-y', '--yes', action='store_true', help=_('yes_description'))
 
     args = parser.parse_args()
 
@@ -66,7 +67,7 @@ def main():
         )
     elif args.update:
         if not os.path.isdir(args.update):
-            print(f"错误: 目录 '{args.update}' 不存在。", file=sys.stderr)
+            print(_("error_directory_not_exist", args.update), file=sys.stderr)
             sys.exit(1)
         update_agent(
             nekro_data_dir=args.update,
@@ -75,7 +76,7 @@ def main():
         )
     elif args.upgrade:
         if not os.path.isdir(args.upgrade):
-            print(f"错误: 目录 '{args.upgrade}' 不存在。", file=sys.stderr)
+            print(_("error_directory_not_exist", args.upgrade), file=sys.stderr)
             sys.exit(1)
         update_agent(
             nekro_data_dir=args.upgrade,

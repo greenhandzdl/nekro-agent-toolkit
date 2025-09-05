@@ -36,6 +36,8 @@ exclude = ["doc*", "tests*"]
 
 [tool.setuptools.package-data]
 conf = ["*.py"]
+"data.zh_CN" = ["*.py"]
+"data.en_US" = ["*.py"]
 
 [tool.setuptools]
 py-modules = ["app"]
