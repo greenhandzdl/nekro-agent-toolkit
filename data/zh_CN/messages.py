@@ -239,5 +239,11 @@ MESSAGES = {
     "downloading_from": "正在从 {} 下载...",
     "download_success": "下载成功: {}",
     "download_failed_try_other": "下载失败，尝试其他源... (错误: {})",
-    "error_details": "错误详情: {}"
+    "error_details": "错误详情: {}",
+    
+    # 备份过滤相关
+    "excluding_logs_directory": "排除日志目录: {}",
+    "excluding_uploads_directory": "排除上传目录: {}",
+    "excluding_env_template": "排除配置模板: {}",
+    "excluding_temp_file": "排除AppleDouble encoded Macintosh file文件: {}"
 }

@@ -239,5 +239,11 @@ MESSAGES = {
     "downloading_from": "Downloading from {}...",
     "download_success": "Download successful: {}",
     "download_failed_try_other": "Download failed, trying other sources... (Error: {})",
-    "error_details": "Error details: {}"
+    "error_details": "Error details: {}",
+    
+    # Backup filtering related
+    "excluding_logs_directory": "Excluding logs directory: {}",
+    "excluding_uploads_directory": "Excluding uploads directory: {}",
+    "excluding_env_template": "Excluding config template: {}",
+    "excluding_temp_file": "Excluding AppleDouble encoded Macintosh file file: {}"
 }

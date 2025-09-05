@@ -276,22 +276,22 @@ def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optiona
         
         # 1. 过滤根目录下的 logs 文件夹
         if len(path_parts) >= 2 and path_parts[1] == 'logs':
-            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            print(f"  - {_('excluding_logs_directory', tarinfo.name)}")
             return None
             
         # 2. 过滤根目录下的 uploads 文件夹
         if len(path_parts) >= 2 and path_parts[1] == 'uploads':
-            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            print(f"  - {_('excluding_uploads_directory', tarinfo.name)}")
             return None
             
         # 3. 过滤根目录下的 .env.example 文件
         if len(path_parts) == 2 and path_parts[1] == '.env.example':
-            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            print(f"  - {_('excluding_env_template', tarinfo.name)}")
             return None
             
         # 4. 过滤所有以 ._ 开头的文件（任何目录层级）
         if filename.startswith('._'):
-            print(f"  - {_('excluding_from_archive', tarinfo.name)}")
+            print(f"  - {_('excluding_temp_file', tarinfo.name)}")
             return None
             
         return tarinfo
