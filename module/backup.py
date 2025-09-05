@@ -9,12 +9,30 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from utils.backup_utils import create_archive, extract_archive, get_archive_root_dir, get_docker_volumes, get_docker_volumes_for_recovery
+from utils.backup_utils import create_archive, extract_archive, get_archive_root_dir, get_docker_volumes, get_docker_volumes_for_recovery, discover_docker_volumes_by_pattern
 from module.install import install_agent
 from utils.i18n import get_message as _
+from conf.backup_settings import DOCKER_VOLUMES_TO_BACKUP, DOCKER_VOLUME_SUFFIXES
 
-# 定义需要备份的 Docker 卷
-DOCKER_VOLUMES_TO_BACKUP = ["nekro_postgres_data", "nekro_qdrant_data"]
+def get_volumes_to_backup():
+    """获取需要备份的 Docker 卷列表。
+    
+    优先使用动态发现，如果没有发现卷则回退到静态配置。
+    
+    Returns:
+        list[str]: 需要备份的 Docker 卷名列表。
+    """
+    # 先尝试动态发现
+    discovered_volumes = discover_docker_volumes_by_pattern(
+        suffixes=DOCKER_VOLUME_SUFFIXES
+    )
+    
+    if discovered_volumes:
+        print(f"  - {_('discovered_docker_volumes', len(discovered_volumes))}")
+        return discovered_volumes
+    else:
+        print(f"  - {_('no_matching_volumes_using_static', DOCKER_VOLUMES_TO_BACKUP)}")
+        return DOCKER_VOLUMES_TO_BACKUP
 
 def backup_agent(data_dir: str, backup_dir: str):
     """备份 Nekro Agent 数据及相关的 Docker 卷。"""
@@ -39,7 +57,8 @@ def backup_agent(data_dir: str, backup_dir: str):
 
     # 2. 获取并添加 Docker 卷路径
     print(f"\n{_('finding_docker_volumes_backup')}")
-    volume_paths = get_docker_volumes(DOCKER_VOLUMES_TO_BACKUP)
+    volumes_to_backup = get_volumes_to_backup()
+    volume_paths = get_docker_volumes(volumes_to_backup)
     for name, path_or_method in volume_paths.items():
         if path_or_method == "container_backup":
             # 使用容器方式备份的卷
@@ -90,7 +109,8 @@ def recover_agent(backup_file: str, data_dir: str, non_interactive: bool = False
 
     # 1. 查找需要恢复的 Docker 卷
     print(f"\n{_('finding_docker_volumes_recovery')}")
-    available_volumes = get_docker_volumes_for_recovery(DOCKER_VOLUMES_TO_BACKUP)
+    volumes_to_backup = get_volumes_to_backup()
+    available_volumes = get_docker_volumes_for_recovery(volumes_to_backup)
     
     if available_volumes and not non_interactive:
         print(_("warning_docker_volumes_will_overwrite"))

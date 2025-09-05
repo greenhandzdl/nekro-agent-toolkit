@@ -8,13 +8,7 @@ import os
 import sys
 import locale
 
-# 获取项目根目录
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(PROJECT_ROOT, "data")
-
-# 支持的语言列表
-SUPPORTED_LANGUAGES = ["zh_CN", "en_US"]
-DEFAULT_LANGUAGE = "zh_CN"
+from conf.i18n_settings import PROJECT_ROOT, DATA_DIR, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE
 
 # 全局语言配置
 _current_language = None

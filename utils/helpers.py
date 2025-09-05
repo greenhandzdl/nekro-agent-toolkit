@@ -13,7 +13,7 @@ import time
 import urllib.request
 from typing import Optional
 
-from conf.settings import BASE_URLS
+from conf.install_settings import BASE_URLS
 from utils.i18n import get_message as _
 
 # --- 系统与命令 ---

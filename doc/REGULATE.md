@@ -2,7 +2,44 @@
 
 # 项目开发规范
 
-本文档定义了 nekro-agent-toolkit 项目的开发规范，包括代码编写、命名约定、注释标准等。所有贡献者都应遵循这些规范以确保代码质量和一致性。
+本文档定义了 nekro-agent-toolkit 项目的编码风格规范，包括项目结构、代码规范、命名约定等。
+
+## 项目架构概览
+
+### 目录结构
+
+```
+nekro-agent-toolkit/
+├── app.py                  # 主入口文件
+├── conf/                   # 配置文件目录
+│   ├── backup_settings.py  # 备份功能配置
+│   ├── i18n_settings.py   # 多语言配置
+│   └── install_settings.py # 安装功能配置
+├── data/                   # 多语言数据目录
+│   ├── zh_CN/             # 中文语言包
+│   │   └── messages.py
+│   └── en_US/             # 英文语言包
+│       └── messages.py
+├── module/                 # 功能模块目录
+│   ├── backup.py          # 备份与恢复模块
+│   ├── install.py         # 安装模块
+│   └── update.py          # 更新模块
+├── utils/                  # 工具函数目录
+│   ├── backup_utils.py    # 备份工具函数
+│   ├── helpers.py         # 通用工具函数
+│   └── i18n.py           # 多语言支持
+└── doc/                   # 文档目录
+    ├── REGULATE.md        # 开发规范(中文)
+    └── REGULATE-EN.md     # 开发规范(英文)
+```
+
+### 组件说明
+
+- **app.py**: 主入口文件
+- **conf/**: 配置文件目录，使用 `xxx_settings.py` 命名格式
+- **data/**: 多语言数据目录
+- **module/**: 功能模块目录
+- **utils/**: 工具函数目录
 
 ## 代码编写规范
 
@@ -12,9 +49,36 @@
 2. **缩进**：使用 4 个空格缩进，不使用 Tab
 3. **行长度**：每行代码不超过 88 个字符（兼容 Black 格式化工具）
 4. **编码声明**：所有 Python 文件开头应包含 UTF-8 编码声明
+5. **类型注解**：支持 Python 3.6+，使用 typing 模块进行类型注解
 
 ```python
 # -*- coding: utf-8 -*-
+"""
+模块描述
+"""
+from typing import Optional, Dict, List, Union
+```
+
+### 类型注解规范
+
+为了兼容 Python 3.6+，使用 typing 模块而不是新式类型注解：
+
+```python
+# 正确（兼容 Python 3.6+）
+from typing import Optional, Dict, List, Union
+
+def process_volumes(volume_names: List[str]) -> Dict[str, str]:
+    pass
+
+def get_backup_path(base_path: str) -> Optional[str]:
+    pass
+
+# 错误（仅 Python 3.10+ 支持）
+def process_volumes(volume_names: list[str]) -> dict[str, str]:
+    pass
+
+def get_backup_path(base_path: str) -> str | None:
+    pass
 ```
 
 ### 导入规范
@@ -38,6 +102,37 @@ import requests
 # 本地模块
 from utils.helpers import command_exists
 from utils.i18n import get_message as _
+from conf.backup_settings import DOCKER_VOLUME_SUFFIXES
+```
+
+## 配置文件规范
+
+### 配置文件命名
+
+配置文件使用 `xxx_settings.py` 格式（使用下划线而非破折号），以符合 Python 导入规范：
+
+```python
+# 正确
+from conf.backup_settings import DOCKER_VOLUME_SUFFIXES
+from conf.i18n_settings import SUPPORTED_LANGUAGES
+
+# 错误（无法导入）
+from conf.backup-settings import DOCKER_VOLUME_SUFFIXES  # 破折号不能用于 Python 模块名
+```
+
+### 配置文件结构
+
+```python
+# conf/backup_settings.py
+"""
+备份功能配置文件
+"""
+
+# Docker 卷后缀匹配模式
+DOCKER_VOLUME_SUFFIXES = ["nekro_postgres_data", "nekro_qdrant_data"]
+
+# 兼容性：静态配置列表
+DOCKER_VOLUMES_TO_BACKUP: List[str] = ["nekro_postgres_data", "nekro_qdrant_data"]
 ```
 
 ## 命名规范
@@ -93,13 +188,18 @@ class DockerVolumeHandler:
 - 使用小写字母和下划线
 - Python 模块文件使用 `.py` 扩展名
 - 目录名简洁明了
+- 配置文件使用 `xxx_settings.py` 格式
 
 ```
 utils/
-├── backup_utils.py
-├── install_utils.py
-├── helpers.py
-└── i18n.py
+├── backup_utils.py      # 备份工具函数
+├── helpers.py          # 通用工具函数
+└── i18n.py            # 多语言支持
+
+conf/
+├── backup_settings.py  # 备份配置
+├── i18n_settings.py   # 多语言配置
+└── install_settings.py # 安装配置
 ```
 
 ## 注释规范
@@ -162,230 +262,42 @@ if result.returncode != 0:
 
 ## 多语言支持规范
 
-### 消息键命名
-
-- 使用小写字母和下划线
-- 具有描述性，包含模块上下文
-- 遵循层次结构
-
-```python
-# 正确示例
-"backup_docker_volume_complete"
-"error_create_docker_volume"
-"excluding_logs_directory"
-"restoring_via_container_starting"
-
-# 错误示例
-"msg1"  # 无意义
-"BackupComplete"  # 驼峰命名
-"docker_complete"  # 缺乏上下文
-```
-
 ### 使用规范
 
-1. **所有用户可见的消息必须多语言化**：
-
+1. **导入多语言函数**：
 ```python
-# 正确
+from utils.i18n import get_message as _
+```
+
+2. **消息调用**：
+```python
+# 正确方式
 print(_('backup_success'))
 print(_('error_directory_not_exist', dir_path))
 
-# 错误
+# 错误方式（禁止硬编码）
 print("备份成功！")  # 硬编码中文
-print(f"目录 {dir_path} 不存在")  # 硬编码格式
 ```
 
-2. **同时更新中英文语言包**：
+3. **消息键命名**：使用 snake_case，具有描述性
 
-```python
-# data/zh_CN/messages.py
-"backup_success": "备份成功！备份文件已保存至:",
 
-# data/en_US/messages.py
-"backup_success": "Backup successful! Backup file saved to:",
-```
 
-### 备份过滤消息规范
 
-备份过滤消息应明确区分不同类型的排除项：
 
-```python
-# 具体的过滤类型消息
-"excluding_logs_directory": "排除日志目录: {}",
-"excluding_uploads_directory": "排除上传目录: {}",
-"excluding_env_template": "排除配置模板: {}",
-"excluding_temp_file": "排除临时文件: {}",
 
-# 避免使用通用消息
-"excluding_from_archive": "正在排除: {}",  # 过于模糊
-```
 
-## 错误处理规范
 
-### 异常处理
 
-- 使用具体的异常类型而非通用的 `Exception`
-- 提供有意义的错误消息
-- 适当使用多语言支持
 
-```python
-try:
-    subprocess.run(cmd, check=True, capture_output=True)
-except subprocess.CalledProcessError as e:
-    print(_('backup_docker_volume_failed', volume_name, e), file=sys.stderr)
-    return False
-except FileNotFoundError:
-    print(_('error_command_not_found', 'docker'), file=sys.stderr)
-    return False
-```
 
-### 返回值约定
 
-- 布尔函数：成功返回 `True`，失败返回 `False`
-- 路径函数：成功返回路径字符串，失败返回 `None`
-- 列表/字典函数：成功返回数据，失败返回空容器
 
-## 文件操作规范
 
-### 路径处理
 
-- 始终使用 `os.path` 进行路径操作
-- 使用绝对路径进行文件操作
-- 适当处理跨平台路径差异
 
-```python
-# 正确
-backup_path = os.path.join(backup_dir, filename)
-if os.path.exists(backup_path):
-    pass
 
-# 错误
-backup_path = backup_dir + "/" + filename  # 硬编码分隔符
-```
-
-### 临时文件处理
-
-- 使用 `tempfile` 模块创建临时文件
-- 确保临时文件在操作完成后被清理
-
-```python
-import tempfile
-import shutil
-
-temp_dir = tempfile.mkdtemp()
-try:
-    # 使用临时目录
-    pass
-finally:
-    shutil.rmtree(temp_dir)
-```
-
-## 特殊文件过滤规范
-
-### 备份过滤规则
-
-遵循 `特殊文件模式过滤规范`：
-
-1. **精确匹配**：使用路径层级匹配而非简单字符串包含
-2. **临时文件过滤**：所有以 `._` 开头的文件应被过滤
-3. **目录保留**：包含被过滤文件的目录本身应被保留
-
-```python
-def exclude_filter(tarinfo: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
-    """过滤规则实现示例"""
-    path_parts = tarinfo.name.split('/')
-    filename = os.path.basename(tarinfo.name)
-    
-    # 过滤临时文件
-    if filename.startswith('._'):
-        print(f"  - {_('excluding_temp_file', tarinfo.name)}")
-        return None
-    
-    # 过滤特定目录
-    if len(path_parts) >= 2 and path_parts[1] == 'logs':
-        print(f"  - {_('excluding_logs_directory', tarinfo.name)}")
-        return None
-        
-    return tarinfo
-```
-
-## 版本管理规范
-
-### 版本信息显示格式
-
-- 源码版本：`nekro-agent-toolkit (源码) abc12345`
-- 包版本：`nekro-agent-toolkit 1.0.3`
-- 脏版本：`nekro-agent-toolkit (源码) abc12345 (dirty)`
-
-### 版本更新脚本
-
-版本更新脚本应：
-- 专注于版本信息更新
-- 不包含与版本无关的功能
-- 确保可维护性和目的明确性
-
-## 测试规范
-
-### 单元测试
-
-- 为关键功能编写单元测试
-- 测试文件命名：`test_*.py`
-- 使用描述性的测试函数名
-
-```python
-def test_create_docker_volume_success():
-    """测试成功创建 Docker 卷"""
-    pass
-
-def test_backup_with_invalid_path():
-    """测试无效路径的备份行为"""
-    pass
-```
-
-### 跨平台测试
-
-- 在多个操作系统上验证功能
-- 特别关注路径处理和命令执行
-- 使用 `platform.system()` 进行系统检测
-
-## 文档规范
-
-### 开发文档
-
-- 保持 Mermaid 架构图简洁明了
-- 仅展示关键模块依赖关系
-- 具有技术参考价值
-
-### 用户文档
-
-- 英文版文档保持精简
-- 重点突出新功能
-- 描述简洁明了
-
-## 代码审查清单
-
-提交代码前应检查：
-
-- [ ] 遵循命名规范
-- [ ] 包含适当的注释和文档字符串
-- [ ] 所有用户消息已多语言化
-- [ ] 错误处理得当
-- [ ] 通过基本测试验证
-- [ ] 符合项目整体架构
-
-## 工具推荐
-
-### 代码格式化
-
-- **Black**：Python 代码自动格式化
-- **isort**：导入语句排序
-
-### 代码检查
-
-- **flake8**：代码风格检查
-- **mypy**：类型检查
-
-### 使用示例
+## 开发工具推荐
 
 ```bash
 # 格式化代码
@@ -396,9 +308,4 @@ isort .
 
 # 代码检查
 flake8 --max-line-length=88 .
-
-# 类型检查
-mypy --ignore-missing-imports .
 ```
-
-遵循这些规范将有助于维护代码质量，提高代码可读性和可维护性，确保项目的长期健康发展。

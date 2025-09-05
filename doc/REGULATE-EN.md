@@ -2,7 +2,44 @@
 
 # Project Development Standards
 
-This document defines the development standards for the nekro-agent-toolkit project, including coding practices, naming conventions, commenting standards, etc. All contributors should follow these standards to ensure code quality and consistency.
+This document defines the coding style standards for the nekro-agent-toolkit project, including project structure, code conventions, and naming conventions.
+
+## Project Architecture Overview
+
+### Directory Structure
+
+```
+nekro-agent-toolkit/
+├── app.py                  # Main entry point
+├── conf/                   # Configuration files
+│   ├── backup_settings.py  # Backup configuration
+│   ├── i18n_settings.py   # I18n configuration
+│   └── install_settings.py # Install configuration
+├── data/                   # Multi-language data
+│   ├── zh_CN/             # Chinese language pack
+│   │   └── messages.py
+│   └── en_US/             # English language pack
+│       └── messages.py
+├── module/                 # Feature modules
+│   ├── backup.py          # Backup & recovery module
+│   ├── install.py         # Install module
+│   └── update.py          # Update module
+├── utils/                  # Utility functions
+│   ├── backup_utils.py    # Backup utilities
+│   ├── helpers.py         # General utilities
+│   └── i18n.py           # Multi-language support
+└── doc/                   # Documentation
+    ├── REGULATE.md        # Development standards (Chinese)
+    └── REGULATE-EN.md     # Development standards (English)
+```
+
+### Component Description
+
+- **app.py**: Main entry point
+- **conf/**: Configuration files directory, using `xxx_settings.py` naming format
+- **data/**: Multi-language data directory
+- **module/**: Feature modules directory
+- **utils/**: Utility functions directory
 
 ## Coding Standards
 
@@ -11,10 +48,37 @@ This document defines the development standards for the nekro-agent-toolkit proj
 1. **Follow PEP 8**: All Python code should follow PEP 8 coding standards
 2. **Indentation**: Use 4 spaces for indentation, no tabs
 3. **Line Length**: Each line should not exceed 88 characters (compatible with Black formatter)
-4. **Encoding Declaration**: All Python files should include UTF-8 encoding declaration at the beginning
+4. **Encoding Declaration**: All Python files should include UTF-8 encoding declaration
+5. **Type Annotations**: Support Python 3.6+ using typing module for type annotations
 
 ```python
 # -*- coding: utf-8 -*-
+"""
+Module description
+"""
+from typing import Optional, Dict, List, Union
+```
+
+### Type Annotation Standards
+
+For Python 3.6+ compatibility, use typing module instead of new-style type annotations:
+
+```python
+# Correct (Python 3.6+ compatible)
+from typing import Optional, Dict, List, Union
+
+def process_volumes(volume_names: List[str]) -> Dict[str, str]:
+    pass
+
+def get_backup_path(base_path: str) -> Optional[str]:
+    pass
+
+# Incorrect (Python 3.10+ only)
+def process_volumes(volume_names: list[str]) -> dict[str, str]:
+    pass
+
+def get_backup_path(base_path: str) -> str | None:
+    pass
 ```
 
 ### Import Standards
@@ -38,6 +102,37 @@ import requests
 # Local modules
 from utils.helpers import command_exists
 from utils.i18n import get_message as _
+from conf.backup_settings import DOCKER_VOLUME_SUFFIXES
+```
+
+## Configuration File Standards
+
+### Configuration File Naming
+
+Configuration files use `xxx_settings.py` format (using underscores, not hyphens) to comply with Python import standards:
+
+```python
+# Correct
+from conf.backup_settings import DOCKER_VOLUME_SUFFIXES
+from conf.i18n_settings import SUPPORTED_LANGUAGES
+
+# Incorrect (cannot import)
+from conf.backup-settings import DOCKER_VOLUME_SUFFIXES  # Hyphens cannot be used in Python module names
+```
+
+### Configuration File Structure
+
+```python
+# conf/backup_settings.py
+"""
+Backup functionality configuration file
+"""
+
+# Docker volume suffix matching patterns
+DOCKER_VOLUME_SUFFIXES = ["nekro_postgres_data", "nekro_qdrant_data"]
+
+# Compatibility: static configuration list
+DOCKER_VOLUMES_TO_BACKUP: List[str] = ["nekro_postgres_data", "nekro_qdrant_data"]
 ```
 
 ## Naming Conventions
@@ -52,7 +147,7 @@ from utils.i18n import get_message as _
 def create_docker_volume_if_not_exists(volume_name: str) -> bool:
     pass
 
-def get_docker_volumes_for_recovery(volume_names: List[str]) -> Dict[str, str]:
+def discover_docker_volumes_by_pattern(suffixes: Optional[List[str]] = None) -> List[str]:
     pass
 
 # Incorrect examples
@@ -92,132 +187,52 @@ class DockerVolumeHandler:
 
 - Use lowercase letters with underscores
 - Python module files use `.py` extension
-- Directory names should be concise and clear
+- Configuration files use `xxx_settings.py` format
 
 ```
 utils/
-├── backup_utils.py
-├── install_utils.py
-├── helpers.py
-└── i18n.py
-```
+├── backup_utils.py      # Backup utilities
+├── helpers.py          # General utilities
+└── i18n.py            # Multi-language support
 
-## Comment Standards
-
-### Module-level Comments
-
-Each Python file should start with a module docstring:
-
-```python
-# -*- coding: utf-8 -*-
-"""
-Low-level utility functions for backup and recovery features.
-
-This module provides cross-platform Docker volume backup and recovery functionality, supporting:
-- Linux system direct filesystem access
-- macOS/Windows system containerized backup
-- Intelligent volume management and automatic creation
-"""
-```
-
-### Function Comments
-
-Use Google-style docstrings:
-
-```python
-def create_docker_volume_if_not_exists(volume_name: str) -> bool:
-    """Create Docker volume if it doesn't exist.
-    
-    Args:
-        volume_name (str): Name of the Docker volume to create.
-        
-    Returns:
-        bool: True if volume exists or creation successful, False on failure.
-        
-    Raises:
-        subprocess.CalledProcessError: When Docker command execution fails.
-    """
-    pass
-```
-
-### Inline Comments
-
-- Used to explain complex logic or non-obvious code
-- Comments should be kept in sync with code updates
-
-```python
-# Check if volume already exists
-result = subprocess.run(
-    ["docker", "volume", "inspect", volume_name],
-    capture_output=True,
-    text=True,
-    check=True
-)
-
-# tar command may output warning "Removing leading `/' from member names"
-# This is normal behavior, success is indicated by return code 0
-if result.returncode != 0:
-    raise subprocess.CalledProcessError(result.returncode, cmd)
+conf/
+├── backup_settings.py  # Backup configuration
+├── i18n_settings.py   # I18n configuration
+└── install_settings.py # Install configuration
 ```
 
 ## Multi-language Support Standards
 
-### Message Key Naming
-
-- Use lowercase letters with underscores
-- Descriptive, include module context
-- Follow hierarchical structure
-
-```python
-# Correct examples
-"backup_docker_volume_complete"
-"error_create_docker_volume"
-"excluding_logs_directory"
-"restoring_via_container_starting"
-
-# Incorrect examples
-"msg1"  # Meaningless
-"BackupComplete"  # CamelCase
-"docker_complete"  # Lacks context
-```
-
 ### Usage Standards
 
-1. **All user-visible messages must be internationalized**:
-
+1. **Import multi-language function**:
 ```python
-# Correct
+from utils.i18n import get_message as _
+```
+
+2. **Message calls**:
+```python
+# Correct way
 print(_('backup_success'))
 print(_('error_directory_not_exist', dir_path))
 
-# Incorrect
+# Incorrect way (no hardcoding)
 print("Backup successful!")  # Hardcoded English
-print(f"Directory {dir_path} does not exist")  # Hardcoded format
 ```
 
-2. **Update both Chinese and English language packs**:
+3. **Message key naming**: Use snake_case, descriptive
 
-```python
-# data/zh_CN/messages.py
-"backup_success": "备份成功！备份文件已保存至:",
+## Development Tools
 
-# data/en_US/messages.py
-"backup_success": "Backup successful! Backup file saved to:",
-```
+```bash
+# Format code
+black --line-length 88 .
 
-### Backup Filter Message Standards
+# Sort imports
+isort .
 
-Backup filter messages should clearly distinguish different types of exclusions:
-
-```python
-# Specific filter type messages
-"excluding_logs_directory": "Excluding logs directory: {}",
-"excluding_uploads_directory": "Excluding uploads directory: {}",
-"excluding_env_template": "Excluding config template: {}",
-"excluding_temp_file": "Excluding temporary file: {}",
-
-# Avoid generic messages
-"excluding_from_archive": "Excluding: {}",  # Too vague
+# Code check
+flake8 --max-line-length=88 .
 ```
 
 ## Error Handling Standards
@@ -227,10 +242,20 @@ Backup filter messages should clearly distinguish different types of exclusions:
 - Use specific exception types rather than generic `Exception`
 - Provide meaningful error messages
 - Properly use multi-language support
+- Docker commands require special handling (tar warnings not treated as errors)
 
 ```python
 try:
-    subprocess.run(cmd, check=True, capture_output=True)
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    
+    # Special handling for Docker/tar commands
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(result.returncode, cmd)
+    
+    # tar normal warnings not treated as errors
+    if result.stderr and "Removing leading" in result.stderr:
+        print(f"  - {_('tar_normal_warning', result.stderr.strip())}")
+        
 except subprocess.CalledProcessError as e:
     print(_('backup_docker_volume_failed', volume_name, e), file=sys.stderr)
     return False
@@ -245,59 +270,20 @@ except FileNotFoundError:
 - Path functions: Return path string on success, `None` on failure
 - List/dict functions: Return data on success, empty container on failure
 
-## File Operation Standards
+## Backup Filtering Standards
 
-### Path Handling
+### Filter Rule Adjustments
 
-- Always use `os.path` for path operations
-- Use absolute paths for file operations
-- Properly handle cross-platform path differences
-
-```python
-# Correct
-backup_path = os.path.join(backup_dir, filename)
-if os.path.exists(backup_path):
-    pass
-
-# Incorrect
-backup_path = backup_dir + "/" + filename  # Hardcoded separator
-```
-
-### Temporary File Handling
-
-- Use `tempfile` module to create temporary files
-- Ensure temporary files are cleaned up after operations
-
-```python
-import tempfile
-import shutil
-
-temp_dir = tempfile.mkdtemp()
-try:
-    # Use temporary directory
-    pass
-finally:
-    shutil.rmtree(temp_dir)
-```
-
-## Special File Filtering Standards
-
-### Backup Filter Rules
-
-Follow `Special File Pattern Filtering Standards`:
-
-1. **Exact Matching**: Use path hierarchy matching rather than simple string containment
-2. **Temporary File Filtering**: All files starting with `._` should be filtered
-3. **Directory Preservation**: Directories containing filtered files should themselves be preserved
+**Current Rules**: Only filter files starting with `._` at root directory level, such files in subdirectories are no longer filtered.
 
 ```python
 def exclude_filter(tarinfo: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
-    """Filter rule implementation example"""
+    """Backup filter function implementation"""
     path_parts = tarinfo.name.split('/')
     filename = os.path.basename(tarinfo.name)
     
-    # Filter temporary files
-    if filename.startswith('._'):
+    # Only filter ._ files at root directory level
+    if len(path_parts) == 2 and filename.startswith('._'):
         print(f"  - {_('excluding_temp_file', tarinfo.name)}")
         return None
     
@@ -305,17 +291,129 @@ def exclude_filter(tarinfo: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
     if len(path_parts) >= 2 and path_parts[1] == 'logs':
         print(f"  - {_('excluding_logs_directory', tarinfo.name)}")
         return None
+    
+    if len(path_parts) >= 2 and path_parts[1] == 'uploads':
+        print(f"  - {_('excluding_uploads_directory', tarinfo.name)}")
+        return None
+        
+    # Filter .env.example files
+    if len(path_parts) == 2 and path_parts[1] == '.env.example':
+        print(f"  - {_('excluding_env_template', tarinfo.name)}")
+        return None
         
     return tarinfo
+```
+
+### Filter Message Standards
+
+Use specific filter type messages, avoid vague generic descriptions:
+
+```python
+# Correct: specific descriptions
+"excluding_logs_directory": "Excluding logs directory: {}",
+"excluding_uploads_directory": "Excluding uploads directory: {}",
+"excluding_env_template": "Excluding config template: {}",
+"excluding_temp_file": "Excluding temporary file: {}",
+
+# Incorrect: vague descriptions
+"excluding_from_archive": "Excluding: {}",  # Too vague
+```
+
+## Runtime Environment Detection Standards
+
+### Detection Mechanism
+
+Implement multiple detection mechanisms to determine runtime environment:
+
+1. **Command Name Detection**: Check if `sys.argv[0]` contains project files
+2. **Script Path Detection**: Check if script path is in project directory
+3. **Source File Detection**: Check if current directory contains project source files
+4. **Default Strategy**: Default to installed version when uncertain
+
+```python
+def is_running_from_source() -> bool:
+    """Determine if running from source code"""
+    # 1. Check command name
+    if 'app.py' in sys.argv[0]:
+        return True
+    
+    # 2. Check script path
+    script_path = os.path.abspath(sys.argv[0])
+    if 'nekro-agent-toolkit' in script_path and script_path.endswith('app.py'):
+        return True
+    
+    # 3. Check source files
+    current_dir = os.getcwd()
+    source_files = ['app.py', 'utils', 'module', 'conf']
+    if all(os.path.exists(os.path.join(current_dir, f)) for f in source_files):
+        return True
+    
+    # 4. Default to installed version
+    return False
+
+def get_command_prefix() -> str:
+    """Get command prefix"""
+    if is_running_from_source():
+        return 'python3 app.py'
+    else:
+        return 'nekro-agent-toolkit'
+```
+
+### Dynamic Help Information Display
+
+Use dynamic command prefix in ArgumentParser's epilog:
+
+```python
+from utils.helpers import get_command_prefix
+
+parser = argparse.ArgumentParser(
+    description=_('app_description'),
+    epilog=_('app_examples', 
+             get_command_prefix(), get_command_prefix(), 
+             get_command_prefix(), get_command_prefix(),
+             get_command_prefix(), get_command_prefix()),
+    formatter_class=argparse.RawDescriptionHelpFormatter
+)
 ```
 
 ## Version Management Standards
 
 ### Version Information Display Format
 
-- Source version: `nekro-agent-toolkit (源码) abc12345`
-- Package version: `nekro-agent-toolkit 1.0.3`
-- Dirty version: `nekro-agent-toolkit (源码) abc12345 (dirty)`
+- **Source Version**: `nekro-agent-toolkit (source) abc12345`
+- **Package Version**: `nekro-agent-toolkit 1.0.3`
+- **Dirty Version**: `nekro-agent-toolkit (source) abc12345 (dirty)`
+
+### Version Detection Mechanism
+
+```python
+def get_version_info() -> str:
+    """Get version information"""
+    if is_running_from_source():
+        # Source running: display Git SHA
+        try:
+            git_sha = subprocess.check_output(
+                ['git', 'rev-parse', '--short', 'HEAD'],
+                cwd=project_root, text=True
+            ).strip()
+            
+            # Check for uncommitted changes
+            try:
+                subprocess.check_output(
+                    ['git', 'diff-index', '--quiet', 'HEAD'],
+                    cwd=project_root
+                )
+                dirty = ""
+            except subprocess.CalledProcessError:
+                dirty = " (dirty)"
+                
+            return f"nekro-agent-toolkit (source) {git_sha}{dirty}"
+        except:
+            return "nekro-agent-toolkit (source) unknown"
+    else:
+        # Installed version: display package version
+        return f"nekro-agent-toolkit {__version__}"
+```
 
 ### Version Update Scripts
 
@@ -331,22 +429,97 @@ Version update scripts should:
 - Write unit tests for key functionality
 - Test file naming: `test_*.py`
 - Use descriptive test function names
+- Validate test files individually, ensuring compilation success
 
 ```python
-def test_create_docker_volume_success():
-    """Test successful Docker volume creation"""
-    pass
+def test_docker_volume_suffix_matching():
+    """Test Docker volume suffix matching functionality"""
+    suffixes = ["nekro_postgres_data", "nekro_qdrant_data"]
+    
+    # Test correct matching
+    assert "my_app-nekro_postgres_data".endswith("nekro_postgres_data")
+    assert "production-nekro_qdrant_data".endswith("nekro_qdrant_data")
+    
+    # Test non-matching
+    assert not "nekro_postgres_data_backup".endswith("nekro_postgres_data")
+    assert not "postgres_data".endswith("nekro_postgres_data")
 
 def test_backup_with_invalid_path():
     """Test backup behavior with invalid path"""
     pass
 ```
 
+### Test Execution Standards
+
+1. **Individual Validation**: Validate immediately after generating one test file
+2. **Compilation Check**: Fix any compilation issues
+3. **Sequential Process**: Only proceed to next file after current file succeeds
+4. **Immediate Execution**: Must execute immediately after writing tests and report results
+
 ### Cross-platform Testing
 
 - Verify functionality on multiple operating systems
 - Pay special attention to path handling and command execution
 - Use `platform.system()` for system detection
+
+## Code Review Checklist
+
+Before submitting code, check:
+
+- [ ] Follow naming conventions (snake_case, config files use xxx_settings.py)
+- [ ] Include appropriate comments and docstrings
+- [ ] All user messages are internationalized (using _() function)
+- [ ] Error handling is appropriate (especially for Docker/tar commands)
+- [ ] Type annotations compatible with Python 3.6+ (using typing module)
+- [ ] Docker volume matching logic correct (suffix matching only)
+- [ ] Backup filter rules correct (only filter ._ files at root directory)
+- [ ] Pass basic test verification
+- [ ] Conform to overall project architecture
+- [ ] Use get_problems to validate code syntax
+
+## Development Tools Recommendations
+
+### Code Formatting
+
+- **Black**: Python code auto-formatting
+- **isort**: Import statement sorting
+
+### Code Checking
+
+- **flake8**: Code style checking
+- **mypy**: Type checking (optional)
+
+### Usage Examples
+
+```bash
+# Format code
+black --line-length 88 .
+
+# Sort imports
+isort .
+
+# Code checking
+flake8 --max-line-length=88 .
+
+# Type checking (optional)
+mypy --ignore-missing-imports .
+
+# Syntax checking
+python3 -m py_compile file.py
+```
+
+## Summary
+
+Following these standards will help:
+
+1. **Improve Code Quality**: Through unified coding style and standards
+2. **Enhance Readability**: Clear naming and commenting standards
+3. **Ensure Compatibility**: Support Python 3.6+ and cross-platform operation
+4. **Improve User Experience**: Complete multi-language support
+5. **Ensure Stability**: Comprehensive error handling and testing mechanisms
+6. **Facilitate Maintenance**: Clear module division and documentation standards
+
+These standards are formulated based on the actual situation of the nekro-agent-toolkit project, aiming to ensure the long-term healthy development of the project.
 
 ## Documentation Standards
 

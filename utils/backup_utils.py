@@ -13,6 +13,60 @@ from typing import Union, Optional, Dict, List
 from utils.helpers import command_exists
 from utils.i18n import get_message as _
 
+def discover_docker_volumes_by_pattern(suffixes: Optional[List[str]] = None) -> List[str]:
+    """根据后缀模式动态发现 Docker 卷。
+
+    Args:
+        suffixes (list[str], optional): 卷名后缀列表（必须匹配）。
+
+    Returns:
+        list[str]: 符合条件的 Docker 卷名列表。
+    """
+    if not command_exists("docker"):
+        print(_("warning_docker_not_found_skip_backup"), file=sys.stderr)
+        return []
+
+    discovered_volumes = []
+    suffixes = suffixes or []
+
+    # 如果没有提供后缀，返回空列表
+    if not suffixes:
+        return []
+
+    try:
+        # 获取所有 Docker 卷
+        result = subprocess.run(
+            ["docker", "volume", "ls", "--format", "{{.Name}}"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        all_volumes = result.stdout.strip().split('\n')
+        if all_volumes == ['']:  # 如果没有卷，返回空列表
+            all_volumes = []
+
+        for volume_name in all_volumes:
+            volume_name = volume_name.strip()
+            if not volume_name:
+                continue
+                
+            # 检查后缀匹配（必须以指定后缀结尾）
+            for suffix in suffixes:
+                if volume_name.endswith(suffix):
+                    discovered_volumes.append(volume_name)
+                    print(f"  - {_('found_matching_docker_volume', volume_name, suffix)}")
+                    break  # 找到一个匹配的后缀就跳出
+
+    except subprocess.CalledProcessError as e:
+        print(_('warning_cannot_get_volume_list', e), file=sys.stderr)
+        return []
+    except Exception as e:
+        print(_('error_docker_volume_discovery_exception', e), file=sys.stderr)
+        return []
+
+    return discovered_volumes
+
 def create_docker_volume_if_not_exists(volume_name: str) -> bool:
     """如果 Docker 卷不存在，则创建它。
     
@@ -289,8 +343,8 @@ def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optiona
             print(f"  - {_('excluding_env_template', tarinfo.name)}")
             return None
             
-        # 4. 过滤所有以 ._ 开头的文件（任何目录层级）
-        if filename.startswith('._'):
+        # 4. 过滤根目录下以 ._ 开头的文件
+        if len(path_parts) == 2 and filename.startswith('._'):
             print(f"  - {_('excluding_temp_file', tarinfo.name)}")
             return None
             

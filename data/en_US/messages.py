@@ -245,5 +245,12 @@ MESSAGES = {
     "excluding_logs_directory": "Excluding logs directory: {}",
     "excluding_uploads_directory": "Excluding uploads directory: {}",
     "excluding_env_template": "Excluding config template: {}",
-    "excluding_temp_file": "Excluding AppleDouble encoded Macintosh file file: {}"
+    "excluding_temp_file": "Excluding AppleDouble encoded Macintosh file file: {}",
+    
+    # Docker volume dynamic discovery related messages
+    "discovered_docker_volumes": "Dynamically discovered {} matching Docker volumes",
+    "no_matching_volumes_using_static": "No matching Docker volumes found, using static configuration: {}",
+    "found_matching_docker_volume": "Found matching Docker volume: {} (matches suffix: {})",
+    "warning_cannot_get_volume_list": "Warning: Unable to get Docker volume list: {}",
+    "error_docker_volume_discovery_exception": "Error: Exception occurred while discovering Docker volumes: {}",
 }

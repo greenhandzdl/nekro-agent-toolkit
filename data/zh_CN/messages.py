@@ -245,5 +245,12 @@ MESSAGES = {
     "excluding_logs_directory": "排除日志目录: {}",
     "excluding_uploads_directory": "排除上传目录: {}",
     "excluding_env_template": "排除配置模板: {}",
-    "excluding_temp_file": "排除AppleDouble encoded Macintosh file文件: {}"
+    "excluding_temp_file": "排除AppleDouble encoded Macintosh file文件: {}",
+    
+    # Docker 卷动态发现相关消息
+    "discovered_docker_volumes": "动态发现了 {} 个符合条件的 Docker 卷",
+    "no_matching_volumes_using_static": "未发现符合条件的 Docker 卷，使用静态配置: {}",
+    "found_matching_docker_volume": "发现符合条件的 Docker 卷: {} (匹配后缀: {})",
+    "warning_cannot_get_volume_list": "警告: 无法获取 Docker 卷列表: {}",
+    "error_docker_volume_discovery_exception": "错误: 发现 Docker 卷时发生异常: {}",
 }
