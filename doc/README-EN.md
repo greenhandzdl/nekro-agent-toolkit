@@ -6,14 +6,17 @@ Nekro Agent is a Docker-based application that can be used with QQ bots. This in
 
 ## Features
 
-- A unified `app.py` script entry point for installation, updates, and backups.
-- Automatically checks for system dependencies (Docker and Docker Compose).
-- Automatically downloads and configures the necessary configuration files.
-- Supports one-click deployment of the main Nekro Agent service.
-- Optional integration with the NapCat QQ bot service.
-- Automatically generates security keys and access tokens.
-- Automatically configures firewall rules (if ufw is used).
-- Built-in backup and recovery tools.
+- A unified `app.py` script entry point for installation, updates, and backups
+- Smart runtime environment detection with dynamic command display
+- Automatically checks for system dependencies (Docker and Docker Compose)
+- Automatically downloads and configures the necessary configuration files
+- Supports one-click deployment of the main Nekro Agent service
+- Optional integration with the NapCat QQ bot service
+- Automatically generates security keys and access tokens
+- Automatically configures firewall rules (if ufw is used)
+- Cross-platform Docker volume backup and recovery (Linux/macOS/Windows)
+- Automatic Docker volume creation in new environments
+- Version information display (Git SHA for source, package version for pip installs)
 
 ## System Requirements
 
@@ -40,6 +43,34 @@ nekro-agent-toolkit --install ./na_data
 
 ### Method 2: Run from source code
 
+```bash
+git clone https://github.com/greenhandzdl/nekro-agent-toolkit.git
+cd nekro-agent-toolkit
+python3 app.py --install ./na_data
+```
+
+### Basic Commands
+
+#### Check Version
+
+```bash
+# Shows Git SHA when running from source
+python3 app.py --version
+# Example output: nekro-agent-toolkit (源码) a1b2c3d4
+
+# Shows version number when installed via pip
+nekro-agent-toolkit --version
+# Example output: nekro-agent-toolkit 1.0.3
+```
+
+#### Help Information
+
+```bash
+# Smart display of correct command format
+python3 app.py --help          # When running from source
+nekro-agent-toolkit --help     # When installed via pip
+```
+
 ### Installation Options
 
 - **Enable NapCat Service**: Append the `--with-napcat` flag.
@@ -64,29 +95,40 @@ nekro-agent-toolkit --install ./na_data
 
 ### Backup and Recovery
 
-- **Backup**: Use the `-b` or `--backup` parameter. You need to provide the source data directory and the directory where the backup file will be stored.
-  ```bash
-  # Back up the ./na_data directory to the ./backups folder
-  nekro-agent-toolkit --backup ./na_data ./backups
-  # Or run from source code:
-  python3 app.py --backup ./na_data ./backups
-  ```
-  > The script automatically generates a timestamped backup file, such as `na_backup_1678886400.tar.zstd`.
+Cross-platform backup and recovery with intelligent strategy selection.
 
-- **Recovery**: Use the `-r` or `--recovery` parameter. You need to provide the backup file and the target directory to restore to.
+#### Smart Backup Strategy
+
+- **Linux**: Direct filesystem access to Docker volumes
+- **macOS/Windows**: Container-based backup via Docker
+- **Auto-detection**: Automatically selects optimal strategy
+
+#### Commands
+
+- **Backup**: Use `-b` or `--backup` parameter
+  ```bash
+  nekro-agent-toolkit --backup ./na_data ./backups
+  ```
+  > Creates timestamped files like `na_backup_1678886400.tar.zstd`
+  > Includes data directory and Docker volumes (nekro_postgres_data, nekro_qdrant_data)
+
+- **Recovery**: Use `-r` or `--recovery` parameter
   ```bash
   nekro-agent-toolkit --recovery ./backups/na_backup_1678886400.tar.zstd ./na_data_new
-  # Or run from source code:
-  python3 app.py --recovery ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   ```
-  > **Note**: The recovery operation will overwrite files in the target directory. If the directory is not empty, the program will ask for confirmation.
+  > **New Environment Support**: Automatically creates missing Docker volumes
 
-- **Recover and Install**: Use the `-ri` or `--recover-install` parameter. This command first performs a recovery and then continues with the installation process on the recovered data (e.g., downloading `docker-compose.yml`, pulling images, etc.).
+- **Recover and Install**: Use `-ri` or `--recover-install` parameter
   ```bash
   nekro-agent-toolkit --recover-install ./backups/na_backup_1678886400.tar.zstd ./na_data_new
-  # Or run from source code:
-  python3 app.py --recover-install ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   ```
+
+#### Advanced Features
+
+- **Cross-platform compatibility**: Same backup works across different OS
+- **Automatic volume management**: Creates missing Docker volumes in new environments
+- **Smart error handling**: Distinguishes normal tar warnings from real errors
+- **Compression optimization**: Prefers zstd, falls back to standard tar
 
 ## Advanced Installation Process Description
 

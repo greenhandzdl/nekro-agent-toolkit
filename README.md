@@ -7,13 +7,16 @@ Nekro Agent 是一个基于 Docker 的应用程序，可以与 QQ 机器人结�
 ## 功能特性
 
 - 统一的 `app.py` 脚本入口，用于安装、更新和备份恢复
+- 智能运行环境检测，自动显示正确的命令格式
 - 自动检查系统依赖（Docker 和 Docker Compose）
 - 自动下载和配置所需的配置文件
 - 支持一键部署 Nekro Agent 主服务
 - 可选集成 NapCat QQ 机器人服务
 - 自动生成安全密钥和访问令牌
 - 自动配置防火墙规则（如果使用 ufw）
-- 内置备份与恢复工具
+- 跨平台 Docker 卷备份与恢复（支持 macOS/Windows/Linux）
+- 新环境下的自动 Docker 卷创建
+- 版本信息显示（支持源码 SHA 和包版本）
 
 ## 系统要求
 
@@ -49,6 +52,28 @@ python3 app.py --install ./na_data
 
 ## 使用方法
 
+### 基本命令
+
+#### 查看版本信息
+
+```bash
+# 源码运行时显示 Git SHA
+python3 app.py --version
+# 输出示例: nekro-agent-toolkit (源码) a1b2c3d4
+
+# 包安装运行时显示版本号
+nekro-agent-toolkit --version
+# 输出示例: nekro-agent-toolkit 1.0.3
+```
+
+#### 查看帮助信息
+
+```bash
+# 智能显示正确的命令格式
+python3 app.py --help    # 源码运行时
+nekro-agent-toolkit --help  # 包安装运行时
+```
+
 ### 安装选项
 
 - **启用 NapCat 服务**：附加 `--with-napcat` 参数。
@@ -73,6 +98,14 @@ python3 app.py --install ./na_data
 
 ### 备份与恢复
 
+本工具提供跨平台的备份与恢复功能，支持 Linux、macOS 和 Windows 系统。
+
+#### 智能备份策略
+
+- **Linux 系统**：直接访问 Docker 卷文件系统路径进行备份
+- **macOS/Windows 系统**：通过 Docker 容器执行备份操作，解决虚拟机路径访问问题
+- **自动检测**：系统会自动选择最优的备份策略
+
 - **备份**：使用 `-b` 或 `--backup` 参数。需要提供源数据目录和备份文件存放目录。
   ```bash
   # 将 ./na_data 目录备份到 ./backups 文件夹中
@@ -81,6 +114,7 @@ python3 app.py --install ./na_data
   python3 app.py --backup ./na_data ./backups
   ```
   > 脚本会自动生成带时间戳的备份文件，如 `na_backup_1678886400.tar.zstd`。
+  > 备份包含数据目录和相关的 Docker 卷（nekro_postgres_data, nekro_qdrant_data）。
 
 - **恢复**：使用 `-r` 或 `--recovery` 参数。需要提供备份文件和要恢复到的目标目录。
   ```bash
@@ -89,6 +123,7 @@ python3 app.py --install ./na_data
   python3 app.py --recovery ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   ```
   > **注意**: 恢复操作会覆盖目标目录中的文件，如果目录非空，程序会请求确认。
+  > **新环境支持**: 如果 Docker 卷不存在，系统会自动创建它们。
 
 - **恢复并安装**：使用 `-ri` 或 `--recover-install` 参数。此命令会先执行恢复，然后在恢复的数据之上继续执行安装流程（如下载 `docker-compose.yml`，拉取镜像等）。
   ```bash
@@ -96,6 +131,13 @@ python3 app.py --install ./na_data
   # 或者从源码运行:
   python3 app.py --recover-install ./backups/na_backup_1678886400.tar.zstd ./na_data_new
   ```
+
+#### 高级备份特性
+
+- **跨平台兼容**：同一个备份文件可以在不同操作系统间恢复
+- **Docker 卷自动管理**：在新环境中自动创建缺失的 Docker 卷
+- **智能错误处理**：区分正常的 tar 警告和真正的错误
+- **压缩优化**：优先使用 zstd 压缩，回退到标准 tar 格式
 
 ## 安装过程高级说明
 
