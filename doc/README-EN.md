@@ -17,6 +17,8 @@ Nekro Agent is a Docker-based application that can be used with QQ bots. This in
 - Cross-platform Docker volume backup and recovery (Linux/macOS/Windows)
 - Automatic Docker volume creation in new environments
 - Version information display (Git SHA for source, package version for pip installs)
+- **Multi-language interface support** (Chinese/English auto-switching)
+- **Smart backup filtering** (excludes logs, uploads, temporary files)
 
 ## System Requirements
 
@@ -48,6 +50,30 @@ git clone https://github.com/greenhandzdl/nekro-agent-toolkit.git
 cd nekro-agent-toolkit
 python3 app.py --install ./na_data
 ```
+
+## New Features
+
+### 🌍 Multi-language Interface
+
+Supports automatic Chinese/English interface switching based on system language:
+
+```bash
+# Chinese environment
+LANG=zh_CN.UTF-8 nekro-agent-toolkit --help
+
+# English environment  
+LANG=en_US.UTF-8 nekro-agent-toolkit --help
+```
+
+### 🛡️ Smart Backup Filtering
+
+Backup now automatically excludes unnecessary files:
+- `./logs/` directory
+- `./uploads/` directory
+- `./.env.example` file
+- All files starting with `._`
+
+This makes backups smaller and cleaner.
 
 ### Basic Commands
 
@@ -129,6 +155,7 @@ Cross-platform backup and recovery with intelligent strategy selection.
 - **Automatic volume management**: Creates missing Docker volumes in new environments
 - **Smart error handling**: Distinguishes normal tar warnings from real errors
 - **Compression optimization**: Prefers zstd, falls back to standard tar
+- **Smart filtering**: Automatically excludes logs, uploads, and temporary files
 
 ## Advanced Installation Process Description
 

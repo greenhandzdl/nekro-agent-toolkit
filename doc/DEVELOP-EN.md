@@ -18,8 +18,12 @@ The project is organized into the following main directories:
   - `install_utils.py`: High-level functions for the installation process.
   - `update_utils.py`: High-level functions for the update process.
   - `backup_utils.py`: Low-level functions for backup/recovery (e.g., archiving, extraction, analysis, cross-platform Docker volume operations).
+  - `i18n.py`: Multi-language support management module.
 - `conf/`: Contains static configuration files.
   - `settings.py`: Shared settings, such as remote repository URLs.
+- `data/`: Contains multi-language files.
+  - `zh_CN/messages.py`: Chinese language pack.
+  - `en_US/messages.py`: English language pack.
 
 ## Module Relationship Diagram
 
@@ -45,7 +49,13 @@ graph TD
 
     subgraph "Shared Libraries"
         HELPERS["utils/helpers.py"];
+        I18N["utils/i18n.py"];
         CONF["conf/settings.py"];
+    end
+
+    subgraph "i18n Support"
+        ZH_CN["data/zh_CN/messages.py"];
+        EN_US["data/en_US/messages.py"];
     end
 
     APP -- calls --> INSTALL;
@@ -60,8 +70,16 @@ graph TD
     INSTALL_UTILS -- imports --> HELPERS;
     UPDATE_UTILS -- imports --> HELPERS;
     BACKUP_UTILS -- imports --> HELPERS;
+    
+    INSTALL_UTILS -- uses --> I18N;
+    UPDATE_UTILS -- uses --> I18N;
+    BACKUP_UTILS -- uses --> I18N;
+    HELPERS -- uses --> I18N;
 
     HELPERS -- imports --> CONF;
+    
+    I18N -- loads --> ZH_CN;
+    I18N -- loads --> EN_US;
 ```
 
 ## Core Feature Modules
@@ -102,6 +120,33 @@ The project implements a cross-platform Docker volume backup solution:
 - Distinguish between normal tar warnings and actual errors
 - Intelligently handle "Removing leading `/' from member names" warnings
 - Validate backup file integrity
+- Smart filtering of unnecessary files (logs, uploads, .env.example, ._ prefixed files)
+
+### Multi-language Support System
+
+The project implements a complete multi-language support system:
+
+#### Core Components
+- `utils/i18n.py`: Multi-language management module
+- `data/zh_CN/messages.py`: Chinese language pack
+- `data/en_US/messages.py`: English language pack
+
+#### Features
+- Automatic language detection (based on `$LANG` environment variable)
+- Dynamic language switching support
+- Message parameter formatting
+- Error-tolerant handling
+
+#### Usage
+```python
+from utils.i18n import get_message as _
+
+# Simple message
+print(_('checking_dependencies'))
+
+# Message with parameters
+print(_('error_directory_not_exist', '/path/to/dir'))
+```
 
 ## Development Workflow
 

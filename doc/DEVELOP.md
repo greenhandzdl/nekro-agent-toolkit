@@ -18,8 +18,12 @@
   - `install_utils.py`: 服务于安装流程的高级函数。
   - `update_utils.py`: 服务于更新流程的高级函数。
   - `backup_utils.py`: 服务于备份恢复的底层函数（如打包、解压、分析归档、跨平台 Docker 卷操作）。
+  - `i18n.py`: 多语言支持管理模块。
 - `conf/`: 存放静态配置文件。
   - `settings.py`: 共享的配置，如远程仓库 URL。
+- `data/`: 存放多语言文件。
+  - `zh_CN/messages.py`: 中文语言包。
+  - `en_US/messages.py`: 英文语言包。
 
 ## 模块关系图
 
@@ -45,7 +49,13 @@ graph TD
 
     subgraph "共享库 (Shared Libraries)"
         HELPERS["utils/helpers.py"];
+        I18N["utils/i18n.py"];
         CONF["conf/settings.py"];
+    end
+
+    subgraph "多语言支持 (i18n Support)"
+        ZH_CN["data/zh_CN/messages.py"];
+        EN_US["data/en_US/messages.py"];
     end
 
     APP -- 调用 --> INSTALL;
@@ -60,8 +70,16 @@ graph TD
     INSTALL_UTILS -- 导入 --> HELPERS;
     UPDATE_UTILS -- 导入 --> HELPERS;
     BACKUP_UTILS -- 导入 --> HELPERS;
+    
+    INSTALL_UTILS -- 使用 --> I18N;
+    UPDATE_UTILS -- 使用 --> I18N;
+    BACKUP_UTILS -- 使用 --> I18N;
+    HELPERS -- 使用 --> I18N;
 
     HELPERS -- 导入 --> CONF;
+    
+    I18N -- 加载 --> ZH_CN;
+    I18N -- 加载 --> EN_US;
 ```
 
 ## 核心功能模块
@@ -102,6 +120,33 @@ graph TD
 - 区分 tar 命令的正常警告和真正错误
 - 智能处理 "Removing leading `/' from member names" 警告
 - 验证备份文件的完整性
+- 智能过滤不必要的文件（logs、uploads、.env.example、._开头文件）
+
+### 多语言支持系统
+
+项目实现了完整的多语言支持系统：
+
+#### 核心组件
+- `utils/i18n.py`: 多语言管理模块
+- `data/zh_CN/messages.py`: 中文语言包
+- `data/en_US/messages.py`: 英文语言包
+
+#### 功能特性
+- 自动语言检测（基于 `$LANG` 环境变量）
+- 动态语言切换支持
+- 消息参数格式化
+- 错误容错处理
+
+#### 使用方法
+```python
+from utils.i18n import get_message as _
+
+# 简单消息
+print(_('checking_dependencies'))
+
+# 带参数消息
+print(_('error_directory_not_exist', '/path/to/dir'))
+```
 
 ## 开发工作流程
 
