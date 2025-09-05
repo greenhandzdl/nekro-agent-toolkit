@@ -132,6 +132,9 @@ MESSAGES = {
     "volume_backup_skipped": "备份中包含卷 '{}'，但未提供其恢复路径，将跳过。",
     "expected_directory_not_found": "恢复后未找到预期的目录 '{}'。",
     "recovery_failed": "恢复失败。",
+    "restoring_via_container_complete": "Docker 卷 '{}' 恢复完成",
+    "restore_docker_volume_failed": "错误: 恢复 Docker 卷 '{}' 失败: {}",
+    "backup_via_container_complete": "Docker 卷 '{}' 备份完成: {}",
     
     # 帮助和使用说明相关
     "install_description": "安装 Nekro Agent 到指定路径。",
@@ -145,4 +148,92 @@ MESSAGES = {
     "dry_run_description": "与 --install 或 --recover-install 配合使用，执行预演。",
     "yes_description": "自动确认所有提示，以非交互模式运行。",
     "all_description": "更新所有服务，而不仅仅是 Nekro Agent",
+    
+    # 安装相关消息
+    "app_data_directory": "应用数据目录 (NEKRO_DATA_DIR): {}",
+    "error_create_app_directory": "错误: 无法创建应用目录 {}。请检查权限。\n{}",
+    "warning_chmod_777": "警告: 正在设置应用目录权限为 777，这可能不安全。",
+    "setting_directory_permissions": "设置目录权限",
+    "switched_to_directory": "已切换到目录: {}",
+    "env_file_found_copying": "在 {} 中找到 .env 文件，正在复制到 {}...",
+    "copy_success": "复制成功。",
+    "env_file_not_found_downloading": "未找到 .env 文件，正在从仓库获取 .env.example...",
+    "error_cannot_get_env_example": "错误: 无法获取 .env.example 文件。",
+    "env_file_created": "已创建 .env 文件。",
+    "updating_nekro_data_dir": "正在更新 .env 文件中的 NEKRO_DATA_DIR...",
+    "checking_generating_credentials": "正在检查并生成必要的访问凭证...",
+    "generating_random_key": "正在生成随机 {}...",
+    "default_no_napcat": "默认不使用 napcat。",
+    "getting_compose_file": "正在获取 {}...",
+    "error_cannot_pull_compose_file": "错误: 无法拉取 docker-compose.yml 文件。",
+    "pulling_service_images": "拉取服务镜像",
+    "starting_main_service": "启动主服务",
+    "pulling_sandbox_image": "拉取沙盒镜像",
+    "detected_docker_host_correcting": "检测到 DOCKER_HOST='{}'，将自动修正为 'unix://{}'",
+    "nekro_agent_needs_port": "NekroAgent 主服务需放行端口 {}/tcp...",
+    "napcat_needs_port": "NapCat 服务需放行端口 {}/tcp...",
+    "configuring_firewall_ufw": "正在配置防火墙 (ufw)...",
+    "allow_port": "放行端口 {}",
+    
+    # 备份相关消息
+    "docker_volume_exists": "Docker 卷 '{}' 已存在",
+    "creating_docker_volume": "正在创建 Docker 卷 '{}'...",
+    "docker_volume_created": "Docker 卷 '{}' 创建成功",
+    "error_create_docker_volume": "错误: 创建 Docker 卷 '{}' 失败: {}",
+    "warning_docker_not_found_skip_recovery": "警告: 未找到 'docker' 命令，将跳过 Docker 卷的恢复。",
+    "warning_docker_not_found_skip_backup": "警告: 未找到 'docker' 命令，将跳过 Docker 卷的备份。",
+    "will_restore_docker_volume_to_path": "将恢复 Docker 卷 '{}' 到路径: {}",
+    "will_restore_docker_volume_via_container": "将通过容器方式恢复 Docker 卷 '{}'",
+    "warning_cannot_get_volume_mountpoint": "警告: 无法获取 Docker 卷 '{}' 的挂载点，将跳过。错误: {}",
+    "found_docker_volume_path": "找到 Docker 卷 '{}' 的路径: {}",
+    "found_docker_volume_container_backup": "找到 Docker 卷 '{}' (将通过容器方式备份)",
+    "warning_docker_volume_invalid_path": "警告: Docker 卷 '{}' 的路径 '{}' 无效或不是一个目录，将跳过。",
+    "warning_cannot_get_volume_info": "警告: 无法获取 Docker 卷 '{}' 的信息，将跳过。错误: {}",
+    "backup_via_container_starting": "正在通过容器备份 Docker 卷 '{}'...",
+    "restoring_via_container_starting": "正在通过容器恢复 Docker 卷 '{}'...",
+    "restoring_via_container_complete": "Docker 卷 '{}' 恢复完成",
+    "backup_via_container_complete": "Docker 卷 '{}' 备份完成: {}",
+    "excluding_from_archive": "正在排除: {}",
+    "detected_zstd_compressing": "检测到 zstd，正在压缩为: {}...",
+    "zstd_not_detected_tar_only": "未检测到 zstd，仅创建 .tar 归档。",
+    "error_archive_creation_failed": "错误：创建归档失败.\n{}",
+    "error_archive_extraction_failed": "错误：解压归档失败.\n{}",
+    "error_zstd_required_for_recovery": "错误: 恢复需要 'zstd' 命令。",
+    "error_unsupported_file_format": "错误: 不支持的文件格式: {}",
+    
+    # Docker 卷容器备份/恢复相关
+    "backup_via_container_starting": "正在通过容器备份 Docker 卷 '{}'...",
+    "restoring_via_container_starting": "正在通过容器恢复 Docker 卷 '{}'...",
+    "restoring_via_container_complete": "Docker 卷 '{}' 恢复完成",
+    "backup_via_container_complete": "Docker 卷 '{}' 备份完成: {}",
+    
+    # 备份创建相关
+    "archiving_current_directory": "将当前目录 '.' 归档为 '{}'",
+    "excluding_from_archive": "正在排除: {}",
+    "detected_zstd_compressing": "检测到 zstd，正在压缩为: {}...",
+    "zstd_not_detected_tar_only": "未检测到 zstd，仅创建 .tar 归档。",
+    
+    # 备份恢复相关
+    "restoring_data_to": "正在恢复数据到: {}",
+    "multiple_root_directories_warning": "警告: 备份中包含多个可能的根目录: {}。无法自动确定主数据目录。",
+    
+    # 通用恢复相关
+    "preparing_recovery_from_backup": "准备从备份文件恢复: {}",
+    "dry_run_will_restore_from": "[Dry Run] 将从备份文件恢复: {}",
+    "dry_run_data_extract_to": "[Dry Run] 数据将被解压到: {}",
+    "dry_run_docker_volumes_restore": "[Dry Run] Docker 卷将被恢复（如果存在于备份中）。",
+    "dry_run_install_on_extracted": "[Dry Run] 将在解压后的数据上运行安装流程。",
+    "recovery_step_failed": "恢复步骤失败，中止操作。",
+    "restoring_backup_to": "正在将备份恢复到: {}",
+    
+    # 命令执行相关
+    "execute_with_current_user_success": "使用当前用户权限执行成功。",
+    "insufficient_permissions_try_sudo": "当前用户权限不足，尝试使用 sudo 提权...",
+    "error_sudo_failed": "错误: 使用 sudo 提权后，{} 仍然失败.\n{}",
+    
+    # 文件下载相关
+    "downloading_from": "正在从 {} 下载...",
+    "download_success": "下载成功: {}",
+    "download_failed_try_other": "下载失败，尝试其他源... (错误: {})",
+    "error_details": "错误详情: {}"
 }

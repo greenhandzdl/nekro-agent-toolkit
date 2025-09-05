@@ -11,6 +11,7 @@ from .helpers import (
     command_exists, get_docker_compose_cmd, run_sudo_command, get_remote_file,
     update_env_file, get_env_value, populate_env_secrets
 )
+from utils.i18n import get_message as _
 
 
 
@@ -23,19 +24,19 @@ def setup_directories(nekro_data_dir):
     返回:
         str: 传入的应用数据目录路径。
     """
-    print(f"应用数据目录 (NEKRO_DATA_DIR): {nekro_data_dir}")
+    print(_("app_data_directory", nekro_data_dir))
 
     try:
         os.makedirs(nekro_data_dir, exist_ok=True)
     except OSError as e:
-        print(f"错误: 无法创建应用目录 {nekro_data_dir}。请检查权限。\n{e}", file=sys.stderr)
+        print(_("error_create_app_directory", nekro_data_dir, e), file=sys.stderr)
         sys.exit(1)
     
-    print("警告: 正在设置应用目录权限为 777，这可能不安全。")
-    run_sudo_command(f"chmod -R 777 {nekro_data_dir}", "设置目录权限")
+    print(_("warning_chmod_777"))
+    run_sudo_command(f"chmod -R 777 {nekro_data_dir}", _("setting_directory_permissions"))
 
     os.chdir(nekro_data_dir)
-    print(f"已切换到目录: {os.getcwd()}")
+    print(_("switched_to_directory", os.getcwd()))
     return nekro_data_dir
 
 def configure_env_file(nekro_data_dir, original_cwd):
@@ -57,19 +58,19 @@ def configure_env_file(nekro_data_dir, original_cwd):
     if not os.path.exists(env_path):
         source_env_in_cwd = os.path.join(original_cwd, ".env")
         if os.path.normpath(original_cwd) != os.path.normpath(nekro_data_dir) and os.path.exists(source_env_in_cwd):
-            print(f"在 {original_cwd} 中找到 .env 文件，正在复制到 {nekro_data_dir}...")
+            print(_("env_file_found_copying", original_cwd, nekro_data_dir))
             shutil.copy(source_env_in_cwd, env_path)
-            print("复制成功。")
+            print(_("copy_success"))
         else:
-            print("未找到 .env 文件，正在从仓库获取 .env.example...")
+            print(_("env_file_not_found_downloading"))
             env_example_path = os.path.join(nekro_data_dir, ".env.example")
             if not get_remote_file(".env.example", env_example_path):
-                print("错误: 无法获取 .env.example 文件。", file=sys.stderr)
+                print(_("error_cannot_get_env_example"), file=sys.stderr)
                 sys.exit(1)
             shutil.copy(env_example_path, env_path)
-            print("已创建 .env 文件。")
+            print(_("env_file_created"))
 
-    print("正在更新 .env 文件中的 NEKRO_DATA_DIR...")
+    print(_("updating_nekro_data_dir"))
     update_env_file(env_path, "NEKRO_DATA_DIR", nekro_data_dir)
     
     populate_env_secrets(env_path)
@@ -81,7 +82,7 @@ def confirm_installation():
 
     如果用户输入 'n' 或 'no'，脚本将中止。
     """
-    print("\n请检查并按需修改 .env 文件中的配置。")
+    print(f"\n{_('check_env_config')}")
     try:
         yn = input("确认是否继续安装？[Y/n] ")
         if yn.lower() not in ['', 'y', 'yes']:
@@ -105,16 +106,16 @@ def download_compose_file(with_napcat_arg):
     with_napcat = with_napcat_arg
     if not with_napcat:
         try:
-            yn = input("是否同时使用 napcat 服务？[Y/n] ")
+            yn = input(_('use_napcat_service'))
             if yn.lower() in ['', 'y', 'yes']:
                 with_napcat = True
         except (EOFError, KeyboardInterrupt):
-            print("\n默认不使用 napcat。")
+            print(f"\n{_("default_no_napcat")}")  
 
     compose_filename = "docker-compose-x-napcat.yml" if with_napcat else "docker-compose.yml"
-    print(f"正在获取 {compose_filename}...")
+    print(_("getting_compose_file", compose_filename))
     if not get_remote_file(compose_filename, "docker-compose.yml"):
-        print("错误: 无法拉取 docker-compose.yml 文件。", file=sys.stderr)
+        print(_("error_cannot_pull_compose_file"), file=sys.stderr)
         sys.exit(1)
     return with_napcat
 
@@ -131,12 +132,12 @@ def run_docker_operations(docker_compose_cmd, env_path):
     docker_env = {}
     docker_host = os.environ.get('DOCKER_HOST')
     if docker_host and docker_host.startswith('/'):
-        print(f"检测到 DOCKER_HOST='{docker_host}'，将自动修正为 'unix://{docker_host}'")
+        print(_("detected_docker_host_correcting", docker_host, docker_host))
         docker_env['DOCKER_HOST'] = f"unix://{docker_host}"
 
-    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} pull", "拉取服务镜像", env=docker_env)
-    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} up -d", "启动主服务", env=docker_env)
-    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", "拉取沙盒镜像", env=docker_env)
+    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} pull", _("pulling_service_images"), env=docker_env)
+    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} up -d", _("starting_main_service"), env=docker_env)
+    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", _("pulling_sandbox_image"), env=docker_env)
 
 def configure_firewall(env_path, with_napcat):
     """如果 ufw 防火墙存在，则为其配置端口转发规则。
@@ -149,15 +150,16 @@ def configure_firewall(env_path, with_napcat):
         return
 
     nekro_port = get_env_value(env_path, "NEKRO_EXPOSE_PORT") or "8021"
-    print(f"\nNekroAgent 主服务需放行端口 {nekro_port}/tcp...")
+    print(f"\n{_("nekro_agent_needs_port", nekro_port)}")
     if with_napcat:
         napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
-        print(f"NapCat 服务需放行端口 {napcat_port}/tcp...")
+        print(_("napcat_needs_port", napcat_port))
 
-    print("正在配置防火墙 (ufw)...")
-    run_sudo_command(f"ufw allow {nekro_port}/tcp", f"放行端口 {nekro_port}")
+    print(_("configuring_firewall_ufw"))
+    run_sudo_command(f"ufw allow {nekro_port}/tcp", _("allow_port", nekro_port))
     if with_napcat:
-        run_sudo_command(f"ufw allow {napcat_port}/tcp", f"放行端口 {napcat_port}")
+        napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
+        run_sudo_command(f"ufw allow {napcat_port}/tcp", _("allow_port", napcat_port))
 
 def print_summary(env_path, with_napcat):
     """在安装结束后，打印包含重要访问信息和下一步操作的摘要。
@@ -171,30 +173,30 @@ def print_summary(env_path, with_napcat):
     admin_pass = get_env_value(env_path, "NEKRO_ADMIN_PASSWORD")
     nekro_port = get_env_value(env_path, "NEKRO_EXPOSE_PORT") or "8021"
 
-    print("\n=== 部署完成！ ===")
-    print("你可以通过以下命令查看服务日志：")
-    print(f"  NekroAgent: 'sudo docker logs -f {instance_name}nekro_agent'")
+    print(f"\n{_('deployment_complete')}")
+    print(_('view_logs_instruction'))
+    print(_('nekro_agent_logs', instance_name))
     if with_napcat:
         napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
-        print(f"  NapCat: 'sudo docker logs -f {instance_name}napcat'")
+        print(_('napcat_logs', instance_name))
 
-    print("\n=== 重要配置信息 ===")
-    print(f"OneBot 访问令牌: {onebot_token}")
-    print(f"管理员账号: admin | 密码: {admin_pass}")
+    print(f"\n{_('important_config_info')}")
+    print(_('onebot_access_token', onebot_token))
+    print(_('admin_account', admin_pass))
 
-    print("\n=== 服务访问信息 ===")
-    print(f"NekroAgent 主服务端口: {nekro_port}")
-    print(f"NekroAgent Web 访问地址: http://127.0.0.1:{nekro_port}")
+    print(f"\n{_('service_access_info')}")
+    print(_('nekro_agent_port', nekro_port))
+    print(_('nekro_agent_web_access', nekro_port))
     if with_napcat:
         napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
-        print(f"NapCat 服务端口: {napcat_port}")
+        print(_('napcat_service_port', napcat_port))
     else:
-        print(f"OneBot WebSocket 连接地址: ws://127.0.0.1:{nekro_port}/onebot/v11/ws")
+        print(_('onebot_websocket_address', nekro_port))
     
-    print("\n=== 注意事项 ===")
-    print("1. 如果您使用的是云服务器，请在云服务商控制台的安全组中放行相应端口。")
-    print("2. 如果需要从外部访问，请将上述地址中的 127.0.0.1 替换为您的服务器公网IP。")
+    print(f"\n{_('important_notes')}")
+    print(_('cloud_server_note'))
+    print(_('external_access_note'))
     if with_napcat:
-        print(f"3. 请使用 'sudo docker logs {instance_name}napcat' 查看机器人 QQ 账号二维码进行登录。")
+        print(_('napcat_qr_code_note', instance_name))
 
-    print("\n安装完成！祝您使用愉快！")
+    print(f"\n{_('installation_complete')}")

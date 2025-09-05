@@ -193,11 +193,11 @@ def run_sudo_command(command, description, env=None):
     try:
         # 1. 尝试直接运行
         subprocess.run(command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=cmd_env)
-        print("使用当前用户权限执行成功。")
+        print(_('execute_with_current_user_success'))
         return
     except subprocess.CalledProcessError:
         # 2. 如果失败，则尝试 sudo
-        print("当前用户权限不足，尝试使用 sudo 提权...")
+        print(_('insufficient_permissions_try_sudo'))
         
         # 构建 sudo 命令
         sudo_command = f"sudo -E {command}"
@@ -207,7 +207,7 @@ def run_sudo_command(command, description, env=None):
             subprocess.run(sudo_command, shell=True, check=True, env=cmd_env)
             print(_("sudo_elevation_success"))
         except subprocess.CalledProcessError as e:
-            print(f"错误: 使用 sudo 提权后，{description} 仍然失败.\n{e}", file=sys.stderr)
+            print(_('error_sudo_failed', description, e), file=sys.stderr)
             sys.exit(1)
         except FileNotFoundError:
             print(_("error_sudo_not_found"), file=sys.stderr)
@@ -257,12 +257,12 @@ def get_remote_file(filename, output_path):
     for base_url in BASE_URLS:
         url = f"{base_url}/{filename}"
         try:
-            print(f"正在从 {url} 下载...")
+            print(_('downloading_from', url))
             urllib.request.urlretrieve(url, output_path)
-            print(f"下载成功: {filename}")
+            print(_('download_success', filename))
             return True
         except Exception as e:
-            print(f"下载失败，尝试其他源... (错误: {e})")
+            print(_('download_failed_try_other', e))
             time.sleep(1)
     return False
 
@@ -323,10 +323,10 @@ def populate_env_secrets(env_path):
     参数:
         env_path (str): .env 文件的路径。
     """
-    print("正在检查并生成必要的访问凭证...")
+    print(_("checking_generating_credentials"))
     for key, length in [("ONEBOT_ACCESS_TOKEN", 32), ("NEKRO_ADMIN_PASSWORD", 16), ("QDRANT_API_KEY", 32)]:
         if not get_env_value(env_path, key):
-            print(f"正在生成随机 {key}...")
+            print(_("generating_random_key", key))
             update_env_file(env_path, key, generate_random_string(length))
 
 # --- 其他 ---

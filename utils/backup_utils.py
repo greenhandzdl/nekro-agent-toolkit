@@ -11,6 +11,7 @@ import platform
 from typing import Union, Optional, Dict, List
 
 from utils.helpers import command_exists
+from utils.i18n import get_message as _
 
 def create_docker_volume_if_not_exists(volume_name: str) -> bool:
     """如果 Docker 卷不存在，则创建它。
@@ -29,24 +30,24 @@ def create_docker_volume_if_not_exists(volume_name: str) -> bool:
             text=True,
             check=True
         )
-        print(f"  - Docker 卷 '{volume_name}' 已存在")
+        print(f"  - {_("docker_volume_exists", volume_name)}")
         return True
         
     except subprocess.CalledProcessError:
         # 卷不存在，尝试创建它
         try:
-            print(f"  - 正在创建 Docker 卷 '{volume_name}'...")
+            print(f"  - {_("creating_docker_volume", volume_name)}")
             subprocess.run(
                 ["docker", "volume", "create", volume_name],
                 capture_output=True,
                 text=True,
                 check=True
             )
-            print(f"  - Docker 卷 '{volume_name}' 创建成功")
+            print(f"  - {_("docker_volume_created", volume_name)}")
             return True
             
         except subprocess.CalledProcessError as e:
-            print(f"错误: 创建 Docker 卷 '{volume_name}' 失败: {e}", file=sys.stderr)
+            print(_("error_create_docker_volume", volume_name, e), file=sys.stderr)
             return False
 
 def get_docker_volumes_for_recovery(volume_names: List[str]) -> Dict[str, str]:
@@ -61,7 +62,7 @@ def get_docker_volumes_for_recovery(volume_names: List[str]) -> Dict[str, str]:
         dict[str, str]: 一个字典，键是卷名，值是其状态信息或备份方法标识。
     """
     if not command_exists("docker"):
-        print("警告: 未找到 'docker' 命令，将跳过 Docker 卷的恢复。", file=sys.stderr)
+        print(_("warning_docker_not_found_skip_recovery"), file=sys.stderr)
         return {}
 
     volume_info = {}
@@ -82,13 +83,13 @@ def get_docker_volumes_for_recovery(volume_names: List[str]) -> Dict[str, str]:
                     volume_data = json.loads(result.stdout)
                     mountpoint = volume_data[0]['Mountpoint']
                     volume_info[name] = mountpoint
-                    print(f"  - 将恢复 Docker 卷 '{name}' 到路径: {mountpoint}")
+                    print(f"  - {_('will_restore_docker_volume_to_path', name, mountpoint)}")
                 except (subprocess.CalledProcessError, json.JSONDecodeError, IndexError, KeyError) as e:
-                    print(f"警告: 无法获取 Docker 卷 '{name}' 的挂载点，将跳过。错误: {e}", file=sys.stderr)
+                    print(_("warning_cannot_get_volume_mountpoint", name, e), file=sys.stderr)
             else:
                 # 在 macOS/Windows 系统上，使用容器方式恢复
                 volume_info[name] = "container_backup"
-                print(f"  - 将通过容器方式恢复 Docker 卷 '{name}'")
+                print(f"  - {_('will_restore_docker_volume_via_container', name)}")
     
     return volume_info
 
@@ -105,7 +106,7 @@ def get_docker_volumes(volume_names: List[str]) -> Dict[str, str]:
         dict[str, str]: 一个字典，键是卷名，值是其状态信息或备份方法标识。
     """
     if not command_exists("docker"):
-        print("警告: 未找到 'docker' 命令，将跳过 Docker 卷的备份。", file=sys.stderr)
+        print(_("warning_docker_not_found_skip_backup"), file=sys.stderr)
         return {}
 
     volume_info = {}
@@ -127,16 +128,16 @@ def get_docker_volumes(volume_names: List[str]) -> Dict[str, str]:
                 # 在 Linux 系统上，可以直接访问 Docker 卷路径
                 if os.path.isdir(mountpoint):
                     volume_info[name] = mountpoint
-                    print(f"  - 找到 Docker 卷 '{name}' 的路径: {mountpoint}")
+                    print(f"  - {_('found_docker_volume_path', name, mountpoint)}")
                 else:
-                    print(f"警告: Docker 卷 '{name}' 的路径 '{mountpoint}' 无效或不是一个目录，将跳过。", file=sys.stderr)
+                    print(_("warning_docker_volume_invalid_path", name, mountpoint), file=sys.stderr)
             else:
                 # 在 macOS/Windows 系统上，Docker 运行在虚拟机中，需要通过容器方式备份
                 volume_info[name] = "container_backup"
-                print(f"  - 找到 Docker 卷 '{name}' (将通过容器方式备份)")
+                print(f"  - {_('found_docker_volume_container_backup', name)}")
                 
         except (subprocess.CalledProcessError, json.JSONDecodeError, IndexError, KeyError) as e:
-            print(f"警告: 无法获取 Docker 卷 '{name}' 的信息，将跳过。错误: {e}", file=sys.stderr)
+            print(_("warning_cannot_get_volume_info", name, e), file=sys.stderr)
     
     return volume_info
 
@@ -157,7 +158,7 @@ def backup_docker_volume_via_container(volume_name: str, backup_path: str) -> bo
         backup_dir = os.path.dirname(backup_path)
         backup_filename = os.path.basename(backup_path)
         
-        print(f"  - 正在通过容器备份 Docker 卷 '{volume_name}'...")
+        print(f"  - {_('backup_via_container_starting', volume_name)}")
         
         # 使用 ubuntu 容器来创建卷的 tar 备份
         cmd = [
@@ -179,24 +180,24 @@ def backup_docker_volume_via_container(volume_name: str, backup_path: str) -> bo
         
         # 检查备份文件是否成功创建且不为空
         if not os.path.exists(backup_path) or os.path.getsize(backup_path) == 0:
-            raise FileNotFoundError(f"备份文件 {backup_path} 未成功创建或为空")
+            raise FileNotFoundError(_('backup_file_not_created', backup_path))
         
         # 如果有 stderr 输出但返回码为 0，只是显示警告，不当作错误
         if result.stderr and "Removing leading" in result.stderr:
-            print(f"  - 注意: tar 输出了正常警告: {result.stderr.strip()}")
+            print(f"  - {_('tar_normal_warning', result.stderr.strip())}")
         elif result.stderr:
-            print(f"  - 警告: {result.stderr.strip()}")
+            print(f"  - {_('tar_warning', result.stderr.strip())}")
         
-        print(f"  - Docker 卷 '{volume_name}' 备份完成: {backup_path}")
+        print(f"  - {_('backup_via_container_complete', volume_name, backup_path)}")
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"错误: 备份 Docker 卷 '{volume_name}' 失败: {e}", file=sys.stderr)
+        print(_('backup_docker_volume_failed', volume_name, e), file=sys.stderr)
         if e.stderr:
-            print(f"错误详情: {e.stderr}", file=sys.stderr)
+            print(_('error_details', e.stderr), file=sys.stderr)
         return False
     except Exception as e:
-        print(f"错误: 备份 Docker 卷 '{volume_name}' 时发生异常: {e}", file=sys.stderr)
+        print(_('backup_docker_volume_exception', volume_name, e), file=sys.stderr)
         return False
 
 def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> bool:
@@ -214,7 +215,7 @@ def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> b
         backup_dir = os.path.dirname(backup_path)
         backup_filename = os.path.basename(backup_path)
         
-        print(f"  - 正在通过容器恢复 Docker 卷 '{volume_name}'...")
+        print(f"  - {_('restoring_via_container_starting', volume_name)}")
         
         # 使用 ubuntu 容器来恢复卷的 tar 备份
         cmd = [
@@ -227,11 +228,11 @@ def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> b
         ]
         
         subprocess.run(cmd, check=True, capture_output=True)
-        print(f"  - Docker 卷 '{volume_name}' 恢复完成")
+        print(f"  - {_('restoring_via_container_complete', volume_name)}")
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"错误: 恢复 Docker 卷 '{volume_name}' 失败: {e}", file=sys.stderr)
+        print(_('restore_docker_volume_failed', volume_name, e), file=sys.stderr)
         return False
 
 def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optional[str]:
@@ -270,18 +271,18 @@ def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optiona
         """Tarfile filter to exclude specific files/directories."""
         for pattern in excluded_patterns:
             if pattern in tarinfo.name:
-                print(f"  - 正在排除: {tarinfo.name}")
+                print(f"  - {_('excluding_from_archive', tarinfo.name)}")
                 return None
         return tarinfo
 
     try:
-        print(f"正在创建 tar 归档: {tar_path}...")
+        print(_('creating_tar_archive', tar_path))
         
         # 创建主 tar 文件
         with tarfile.open(tar_path, "w") as tar:
             # 添加常规文件和目录
             for source, arcname in regular_sources.items():
-                print(f"  - 正在添加: {source} (归档为: {arcname})")
+                print(_('adding_to_archive', source, arcname))
                 tar.add(source, arcname=arcname, filter=exclude_filter)
         
         # 处理 Docker 卷备份
@@ -300,7 +301,7 @@ def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optiona
                     with tarfile.open(tar_path, "a") as tar:
                         for volume_name, backup_path in volume_backups.items():
                             arcname = f"volumes/{volume_name}.tar.gz"
-                            print(f"  - 正在添加 Docker 卷备份: {volume_name} (归档为: {arcname})")
+                            print(_('adding_docker_volume_backup', volume_name, arcname))
                             tar.add(backup_path, arcname=arcname)
             finally:
                 import shutil
@@ -309,16 +310,16 @@ def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optiona
         # 压缩最终归档
         if command_exists("zstd"):
             zstd_path = f"{dest_path_base}.tar.zstd"
-            print(f"检测到 zstd，正在压缩为: {zstd_path}...")
+            print(_('detected_zstd_compressing', zstd_path))
             subprocess.run(["zstd", "-f", "--quiet", tar_path, "-o", zstd_path], check=True)
             os.remove(tar_path)
             return zstd_path
         else:
-            print("未检测到 zstd，仅创建 .tar 归档。")
+            print(_('zstd_not_detected_tar_only'))
             return tar_path
 
     except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
-        print(f"错误：创建归档失败.\n{e}", file=sys.stderr)
+        print(_('error_archive_creation_failed', e), file=sys.stderr)
         if os.path.exists(tar_path):
             os.remove(tar_path)
         return None
@@ -341,14 +342,14 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
         # 1. 解压整个归档到临时目录
         if archive_path.endswith(".tar.zstd"):
             if not command_exists("zstd"):
-                print("错误: 恢复需要 'zstd' 命令。", file=sys.stderr)
+                print(_('error_zstd_required_for_recovery'), file=sys.stderr)
                 return False
             subprocess.run(["zstd", "-d", "--quiet", archive_path, "-o", f"{temp_extract_dir}/archive.tar"], check=True)
             tar_path = f"{temp_extract_dir}/archive.tar"
         elif archive_path.endswith(".tar"):
             tar_path = archive_path
         else:
-            print(f"错误: 不支持的文件格式: {archive_path}", file=sys.stderr)
+            print(_('error_unsupported_file_format', archive_path), file=sys.stderr)
             return False
 
         with tarfile.open(tar_path, "r") as tar:
@@ -364,7 +365,7 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
         if data_root_name:
             source_data_path = os.path.join(temp_extract_dir, data_root_name)
             if os.path.exists(source_data_path):
-                print(f"正在恢复数据到: {dest_dir}")
+                print(_('restoring_data_to', dest_dir))
                 # 将数据文件移动到最终目标
                 for item in os.listdir(source_data_path):
                     s = os.path.join(source_data_path, item)
@@ -397,7 +398,7 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
                         if system == "Linux":
                             # 在 Linux 上可以直接操作挂载点
                             target_mountpoint = volume_mountpoints[volume_name]
-                            print(f"正在恢复 Docker 卷 '{volume_name}' 到: {target_mountpoint}")
+                            print(_('restoring_docker_volume', volume_name, target_mountpoint))
                             
                             # 清理目标挂载点并解压
                             if os.path.isdir(target_mountpoint):
@@ -411,15 +412,15 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
                             ], check=True)
                         else:
                             # 在 macOS/Windows 上通过容器恢复
-                            print(f"正在恢复 Docker 卷 '{volume_name}' (通过容器方式)")
+                            print(_('restoring_docker_volume_via_container', volume_name))
                             restore_docker_volume_via_container(volume_name, volume_backup_path)
                     else:
-                        print(f"警告: 备份中包含卷 '{volume_name}'，但未提供其恢复路径，将跳过。", file=sys.stderr)
+                        print(_('volume_backup_skipped', volume_name), file=sys.stderr)
 
         return True
 
     except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
-        print(f"错误：解压归档失败.\n{e}", file=sys.stderr)
+        print(_('error_archive_extraction_failed', e), file=sys.stderr)
         return False
     finally:
         import shutil
@@ -439,7 +440,7 @@ def get_archive_root_dir(archive_path: str, inspect_path: Optional[str] = None) 
                 return top_levels.pop()
             # 如果解压路径下除了volumes还有多个，就无法确定哪个是主目录
             elif len(top_levels) > 1:
-                 print(f"警告: 备份中包含多个可能的根目录: {top_levels}。无法自动确定主数据目录。", file=sys.stderr)
+                 print(_('multiple_root_directories_warning', top_levels), file=sys.stderr)
                  return None
             else: # 只有volumes目录
                 return None

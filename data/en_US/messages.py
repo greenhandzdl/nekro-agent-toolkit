@@ -132,6 +132,9 @@ MESSAGES = {
     "volume_backup_skipped": "Backup contains volume '{}', but no recovery path provided, will skip.",
     "expected_directory_not_found": "Expected directory '{}' not found after recovery.",
     "recovery_failed": "Recovery failed.",
+    "restoring_via_container_complete": "Docker volume '{}' restoration complete",
+    "restore_docker_volume_failed": "Error: Failed to restore Docker volume '{}': {}",
+    "backup_via_container_complete": "Docker volume '{}' backup complete: {}",
     
     # Help and usage related
     "install_description": "Install Nekro Agent to the specified path.",
@@ -145,4 +148,92 @@ MESSAGES = {
     "dry_run_description": "Use with --install or --recover-install to perform a dry run.",
     "yes_description": "Automatically confirm all prompts to run in non-interactive mode.",
     "all_description": "Update all services, not just Nekro Agent",
+    
+    # Installation related messages
+    "app_data_directory": "Application data directory (NEKRO_DATA_DIR): {}",
+    "error_create_app_directory": "Error: Cannot create application directory {}. Please check permissions.\n{}",
+    "warning_chmod_777": "Warning: Setting application directory permissions to 777, this may not be secure.",
+    "setting_directory_permissions": "Setting directory permissions",
+    "switched_to_directory": "Switched to directory: {}",
+    "env_file_found_copying": "Found .env file in {}, copying to {}...",
+    "copy_success": "Copy successful.",
+    "env_file_not_found_downloading": ".env file not found, downloading .env.example from repository...",
+    "error_cannot_get_env_example": "Error: Cannot get .env.example file.",
+    "env_file_created": ".env file created.",
+    "updating_nekro_data_dir": "Updating NEKRO_DATA_DIR in .env file...",
+    "checking_generating_credentials": "Checking and generating necessary access credentials...",
+    "generating_random_key": "Generating random {}...",
+    "default_no_napcat": "Default to not use napcat.",
+    "getting_compose_file": "Getting {}...",
+    "error_cannot_pull_compose_file": "Error: Cannot pull docker-compose.yml file.",
+    "pulling_service_images": "Pulling service images",
+    "starting_main_service": "Starting main service",
+    "pulling_sandbox_image": "Pulling sandbox image",
+    "detected_docker_host_correcting": "Detected DOCKER_HOST='{}', will automatically correct to 'unix://{}'",
+    "nekro_agent_needs_port": "NekroAgent main service needs to allow port {}/tcp...",
+    "napcat_needs_port": "NapCat service needs to allow port {}/tcp...",
+    "configuring_firewall_ufw": "Configuring firewall (ufw)...",
+    "allow_port": "Allow port {}",
+    
+    # Backup related messages
+    "docker_volume_exists": "Docker volume '{}' already exists",
+    "creating_docker_volume": "Creating Docker volume '{}'...",
+    "docker_volume_created": "Docker volume '{}' created successfully",
+    "error_create_docker_volume": "Error: Failed to create Docker volume '{}': {}",
+    "warning_docker_not_found_skip_recovery": "Warning: 'docker' command not found, will skip Docker volume recovery.",
+    "warning_docker_not_found_skip_backup": "Warning: 'docker' command not found, will skip Docker volume backup.",
+    "will_restore_docker_volume_to_path": "Will restore Docker volume '{}' to path: {}",
+    "will_restore_docker_volume_via_container": "Will restore Docker volume '{}' via container method",
+    "warning_cannot_get_volume_mountpoint": "Warning: Cannot get mountpoint for Docker volume '{}', will skip. Error: {}",
+    "found_docker_volume_path": "Found Docker volume '{}' path: {}",
+    "found_docker_volume_container_backup": "Found Docker volume '{}' (will backup via container method)",
+    "warning_docker_volume_invalid_path": "Warning: Docker volume '{}' path '{}' is invalid or not a directory, will skip.",
+    "warning_cannot_get_volume_info": "Warning: Cannot get information for Docker volume '{}', will skip. Error: {}",
+    "backup_via_container_starting": "Backing up Docker volume '{}' via container...",
+    "restoring_via_container_starting": "Restoring Docker volume '{}' via container...",
+    "restoring_via_container_complete": "Docker volume '{}' restoration complete",
+    "backup_via_container_complete": "Docker volume '{}' backup complete: {}",
+    "excluding_from_archive": "Excluding: {}",
+    "detected_zstd_compressing": "Detected zstd, compressing to: {}...",
+    "zstd_not_detected_tar_only": "zstd not detected, creating .tar archive only.",
+    "error_archive_creation_failed": "Error: Archive creation failed.\n{}",
+    "error_archive_extraction_failed": "Error: Archive extraction failed.\n{}",
+    "error_zstd_required_for_recovery": "Error: Recovery requires 'zstd' command.",
+    "error_unsupported_file_format": "Error: Unsupported file format: {}",
+    
+    # Docker volume container backup/recovery related
+    "backup_via_container_starting": "Backing up Docker volume '{}' via container...",
+    "restoring_via_container_starting": "Restoring Docker volume '{}' via container...",
+    "restoring_via_container_complete": "Docker volume '{}' restoration complete",
+    "backup_via_container_complete": "Docker volume '{}' backup complete: {}",
+    
+    # Backup creation related
+    "archiving_current_directory": "Archiving current directory '.' as '{}'",
+    "excluding_from_archive": "Excluding: {}",
+    "detected_zstd_compressing": "Detected zstd, compressing to: {}...",
+    "zstd_not_detected_tar_only": "zstd not detected, creating .tar archive only.",
+    
+    # Backup recovery related
+    "restoring_data_to": "Restoring data to: {}",
+    "multiple_root_directories_warning": "Warning: Backup contains multiple possible root directories: {}. Cannot automatically determine main data directory.",
+    
+    # General recovery related
+    "preparing_recovery_from_backup": "Preparing recovery from backup file: {}",
+    "dry_run_will_restore_from": "[Dry Run] Will restore from backup file: {}",
+    "dry_run_data_extract_to": "[Dry Run] Data will be extracted to: {}",
+    "dry_run_docker_volumes_restore": "[Dry Run] Docker volumes will be restored (if present in backup).",
+    "dry_run_install_on_extracted": "[Dry Run] Will run installation process on extracted data.",
+    "recovery_step_failed": "Recovery step failed, aborting operation.",
+    "restoring_backup_to": "Restoring backup to: {}",
+    
+    # Command execution related
+    "execute_with_current_user_success": "Executed successfully with current user permissions.",
+    "insufficient_permissions_try_sudo": "Insufficient current user permissions, trying sudo elevation...",
+    "error_sudo_failed": "Error: Even after sudo elevation, {} still failed.\n{}",
+    
+    # File download related
+    "downloading_from": "Downloading from {}...",
+    "download_success": "Download successful: {}",
+    "download_failed_try_other": "Download failed, trying other sources... (Error: {})",
+    "error_details": "Error details: {}"
 }

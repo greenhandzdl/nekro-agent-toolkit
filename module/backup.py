@@ -11,13 +11,14 @@ if project_root not in sys.path:
 
 from utils.backup_utils import create_archive, extract_archive, get_archive_root_dir, get_docker_volumes, get_docker_volumes_for_recovery
 from module.install import install_agent
+from utils.i18n import get_message as _
 
 # 定义需要备份的 Docker 卷
 DOCKER_VOLUMES_TO_BACKUP = ["nekro_postgres_data", "nekro_qdrant_data"]
 
 def backup_agent(data_dir: str, backup_dir: str):
     """备份 Nekro Agent 数据及相关的 Docker 卷。"""
-    print(f"开始备份 Nekro Agent, 数据目录: {data_dir}")
+    print(_("starting_backup", data_dir))
     
     source_paths = {}
 
@@ -28,16 +29,16 @@ def backup_agent(data_dir: str, backup_dir: str):
         current_folder_name = os.path.basename(os.getcwd())
         # 实际添加的源是当前目录，但在归档中它位于其父目录下
         source_paths[os.getcwd()] = current_folder_name
-        print(f"  - 将当前目录 '.' 归档为 '{current_folder_name}'")
+        print(f"  - {_('archiving_current_directory', current_folder_name)}")
     else:
         if not os.path.isdir(data_dir):
-            print(f"错误: 指定的数据目录 '{data_dir}' 不存在或不是一个目录。", file=sys.stderr)
+            print(_("error_data_dir_not_exist", data_dir), file=sys.stderr)
             return
         arcname = os.path.basename(os.path.normpath(data_dir))
         source_paths[data_dir] = arcname
 
     # 2. 获取并添加 Docker 卷路径
-    print("\n正在查找需要备份的 Docker 卷...")
+    print(f"\n{_("finding_docker_volumes_backup")}")
     volume_paths = get_docker_volumes(DOCKER_VOLUMES_TO_BACKUP)
     for name, path_or_method in volume_paths.items():
         if path_or_method == "container_backup":
@@ -59,58 +60,58 @@ def backup_agent(data_dir: str, backup_dir: str):
     dest_path_base = os.path.join(backup_dir, backup_filename_base)
 
     # 4. 执行备份
-    print("\n开始创建归档文件...")
+    print(f"\n{_("creating_archive")}")
     final_archive_path = create_archive(source_paths, dest_path_base)
 
     if final_archive_path:
-        print(f"\n备份成功！备份文件已保存至:")
+        print(f"\n{_("backup_success")}")
         print(final_archive_path)
     else:
-        print("\n备份失败。")
+        print(f"\n{_("recovery_failed")}")
 
 def recover_agent(backup_file: str, data_dir: str, non_interactive: bool = False):
     """从备份文件恢复 Nekro Agent 数据和 Docker 卷。"""
-    print(f"准备从备份文件恢复: {backup_file}")
+    print(_('preparing_recovery_from_backup', backup_file))
     if not os.path.isfile(backup_file):
-        print(f"错误: 指定的备份文件 '{backup_file}' 不存在或不是一个文件。", file=sys.stderr)
+        print(_("error_backup_file_not_exist", backup_file), file=sys.stderr)
         return False
     
     if not backup_file.endswith(('.tar', '.tar.zstd')):
-        print(f"错误: 无效的备份文件格式。只支持 '.tar' 和 '.tar.zstd'。", file=sys.stderr)
+        print(_("error_invalid_backup_format"), file=sys.stderr)
         return False
 
     os.makedirs(data_dir, exist_ok=True)
 
     # 检查目标数据目录是否为空
     if os.listdir(data_dir) and not non_interactive:
-        print(f"警告: 目标数据目录 '{data_dir}' 非空。恢复操作可能会覆盖现有文件。")
+        print(_("warning_data_dir_not_empty", data_dir))
         if not get_user_confirmation():
             return False
 
     # 1. 查找需要恢复的 Docker 卷
-    print("\n正在查找需要恢复的 Docker 卷...")
+    print(f"\n{_('finding_docker_volumes_recovery')}")
     available_volumes = get_docker_volumes_for_recovery(DOCKER_VOLUMES_TO_BACKUP)
     
     if available_volumes and not non_interactive:
-        print("警告: 将恢复以下 Docker 卷，这会覆盖卷中的现有内容:")
+        print(_("warning_docker_volumes_will_overwrite"))
         for name in available_volumes:
             print(f"  - {name}")
         if not get_user_confirmation():
             # 如果用户取消，可以选择只恢复数据，不恢复卷
-            print("将仅恢复数据目录，跳过 Docker 卷的恢复。")
+            print(_("warning_skip_data_restore"))
             available_volumes = {}
 
     # 2. 执行恢复
-    print("\n开始解压和恢复文件...")
+    print(f"\n{_('starting_extraction')}")
     # 传递卷名映射，extract_archive 会根据系统类型选择恢复方式
     volume_mountpoints = {name: info for name, info in available_volumes.items()}
     if extract_archive(backup_file, data_dir, volume_mountpoints=volume_mountpoints):
-        print(f"\n恢复成功！数据已恢复至: {data_dir}")
+        print(_("recovery_success", data_dir))
         if volume_mountpoints:
-            print("Docker 卷也已恢复。")
+            print(_("docker_volumes_restored"))
         return True
     else:
-        print("\n恢复失败。")
+        print(f"\n{_('recovery_failed')}")
         return False
 
 def get_user_confirmation() -> bool:
@@ -118,11 +119,11 @@ def get_user_confirmation() -> bool:
     try:
         response = input("是否继续？ (y/N): ")
         if response.lower() != 'y':
-            print("操作已取消。" )
+            print(_("operation_cancelled"))
             return False
         return True
     except (EOFError, KeyboardInterrupt):
-        print("\n操作已取消。" )
+        print(f"\n{_("operation_cancelled")}")
         return False
 
 def recover_and_install_agent(backup_file: str, install_dir: str, **kwargs):
@@ -130,46 +131,46 @@ def recover_and_install_agent(backup_file: str, install_dir: str, **kwargs):
     dry_run = kwargs.get('dry_run', False)
 
     if dry_run:
-        print("--- 开始恢复并安装流程 (Dry Run 模式) ---")
-        print(f"[Dry Run] 将从备份文件恢复: {backup_file}")
-        print(f"[Dry Run] 数据将被解压到: {install_dir}")
-        print(f"[Dry Run] Docker 卷将被恢复（如果存在于备份中）。")
-        print(f"[Dry Run] 将在解压后的数据上运行安装流程。" )
-        print("(未执行任何实际文件操作)")
-        print("--- Dry Run 结束 ---")
+        print(_("dry_run_mode_start"))
+        print(_('dry_run_will_restore_from', backup_file))
+        print(_('dry_run_data_extract_to', install_dir))
+        print(_('dry_run_docker_volumes_restore'))
+        print(_('dry_run_install_on_extracted'))
+        print(_("dry_run_not_executed"))
+        print(_("dry_run_mode_end"))
         return
 
-    print("--- 开始恢复并安装流程 ---")
+    print(_("recovery_install_start"))
     
     # 1. 确定解压出的数据根目录名
-    print("正在分析备份文件...")
+    print(_("analyzing_backup_file"))
     archive_root = get_archive_root_dir(backup_file)
     if not archive_root:
-        print("警告: 无法在备份文件中确定主数据目录，或备份中只包含 Docker 卷。", file=sys.stderr)
+        print(_("warning_cannot_determine_data_dir"), file=sys.stderr)
         # 即使没有主数据目录，也可能需要恢复卷，所以流程继续
 
     # 2. 调用 recover_agent 进行解压 (非交互模式)
-    print(f"正在将备份恢复到: {install_dir}")
+    print(_('restoring_backup_to', install_dir))
     if not recover_agent(backup_file, install_dir, non_interactive=True):
-        print("恢复步骤失败，中止操作。", file=sys.stderr)
+        print(_('recovery_step_failed'), file=sys.stderr)
         return
 
     # 3. 确定解压后的数据目录的完整路径
     if archive_root:
         recovered_data_path = os.path.join(install_dir, archive_root)
         if not os.path.isdir(recovered_data_path):
-            print(f"错误: 恢复后未找到预期的目录 '{recovered_data_path}'。", file=sys.stderr)
+            print(_("expected_directory_not_found", recovered_data_path), file=sys.stderr)
             # 即使数据目录恢复失败，安装流程可能仍需继续（例如，如果它能处理空目录）
         
         # 4. 在解压出的目录上执行安装流程
-        print(f"\n--- 数据已恢复，开始在 {recovered_data_path} 上执行安装流程 ---")
+        print(_("recovery_install_data_restored", recovered_data_path))
         install_agent(nekro_data_dir=recovered_data_path, **kwargs)
     else:
         # 如果没有找到数据根目录，可能需要一个默认或空的目录来运行安装
-        print("\n--- 未恢复特定数据目录，将在目标安装目录上执行安装流程 ---")
+        print(_("recovery_install_no_data_dir"))
         install_agent(nekro_data_dir=install_dir, **kwargs)
 
-    print("--- 恢复并安装流程结束 ---")
+    print(_("recovery_install_end"))
 
 
 def main():

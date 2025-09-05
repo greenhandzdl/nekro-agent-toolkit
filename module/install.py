@@ -13,6 +13,7 @@ from utils.install_utils import (
     setup_directories, configure_env_file, confirm_installation,
     download_compose_file, run_docker_operations, configure_firewall, print_summary
 )
+from utils.i18n import get_message as _
 
 def install_agent(nekro_data_dir: str, with_napcat: bool = False, dry_run: bool = False, non_interactive: bool = False):
     """执行 Nekro Agent 的安装流程。
@@ -32,7 +33,7 @@ def install_agent(nekro_data_dir: str, with_napcat: bool = False, dry_run: bool 
     env_path = configure_env_file(nekro_data_dir, original_cwd)
 
     if dry_run:
-        print(f"\n--dry-run 完成。\n.env 文件已在 {env_path} 生成。\n未执行任何安装操作。")
+        print(_("dry_run_complete", env_path))
         return
     
     if not non_interactive:

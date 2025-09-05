@@ -10,6 +10,7 @@ if project_root not in sys.path:
 
 from utils.helpers import check_dependencies
 from utils.update_utils import update_nekro_agent_only, update_all_services
+from utils.i18n import get_message as _
 
 def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive: bool = False):
     """执行 Nekro Agent 的更新流程。
@@ -24,20 +25,20 @@ def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive:
     
     # 检查数据目录是否存在
     if not os.path.exists(nekro_data_dir):
-        print(f"错误: 指定的数据目录 '{nekro_data_dir}' 不存在。", file=sys.stderr)
+        print(_("error_directory_not_exist", nekro_data_dir), file=sys.stderr)
         return
     
     # 检查是否为有效的 Nekro Agent 目录（包含 docker-compose.yml）
     docker_compose_path = os.path.join(nekro_data_dir, "docker-compose.yml")
     if not os.path.exists(docker_compose_path) and not non_interactive:
-        print(f"警告: 目录 '{nekro_data_dir}' 中未找到 docker-compose.yml 文件。")
+        print(_("warning_compose_file_not_found", nekro_data_dir))
         try:
-            response = input("是否继续更新? (y/N): ")
+            response = input(_("confirm_update"))
             if response.lower() != 'y':
-                print("取消更新。" )
+                print(_("update_cancelled"))
                 return
         except (EOFError, KeyboardInterrupt):
-            print("\n取消更新。" )
+            print(f"\n{_("update_cancelled")}")
             return
     
     # 执行相应的更新操作
@@ -46,7 +47,7 @@ def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive:
     else:
         update_nekro_agent_only(docker_compose_cmd, nekro_data_dir)
     
-    print("\n更新完成!")
+    print(f"\n{_("update_complete")}")
 
 def main():
     """主更新脚本的协调器，负责解析命令行参数并调用更新逻辑。"""
