@@ -69,21 +69,15 @@ def run_sudo_command(command, description, env=None):
         # 2. 如果失败，则尝试 sudo
         print("当前用户权限不足，尝试使用 sudo 提权...")
         
-        # 构建 sudo 命令，并传递环境变量
-        sudo_command = ["sudo"]
-        if env:
-            for key, value in env.items():
-                sudo_command.append(f"{key}='{value}'")
-        
-        # 添加原始命令
-        sudo_command.extend(command.split())
+        # 构建 sudo 命令
+        sudo_command = f"sudo -E {command}"
 
         try:
-            # 使用列表形式的命令来避免 shell=True 带来的注入风险
-            subprocess.run(" ".join(sudo_command), shell=True, check=True)
+            # 使用 `shell=True`，并传递合并后的环境
+            subprocess.run(sudo_command, shell=True, check=True, env=cmd_env)
             print("使用 sudo 提权成功。")
         except subprocess.CalledProcessError as e:
-            print(f"错误: 使用 sudo 提权后，{description} 仍然失败。\n{e}", file=sys.stderr)
+            print(f"错误: 使用 sudo 提权后，{description} 仍然失败.\n{e}", file=sys.stderr)
             sys.exit(1)
         except FileNotFoundError:
             print("错误: 'sudo' 命令未找到。请确保您有管理员权限。", file=sys.stderr)
