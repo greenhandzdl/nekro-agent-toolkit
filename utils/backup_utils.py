@@ -10,8 +10,10 @@ import json
 import platform
 from typing import Union, Optional, Dict, List
 
-from utils.helpers import command_exists
+from utils.helpers import command_exists, update_env_file
 from utils.i18n import get_message as _
+
+
 
 def discover_docker_volumes_by_pattern(suffixes: Optional[List[str]] = None) -> List[str]:
     """根据后缀模式动态发现 Docker 卷。
@@ -457,6 +459,15 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
                     else:
                         import shutil
                         shutil.copy2(s, d)
+
+            # 获取dest_dir绝对路径
+            dest_dir = os.path.abspath(dest_dir)
+            # 更新.env文件数据目录
+            env_path = os.path.join(dest_dir, ".env")
+            if os.path.exists(env_path):
+                    print(_("updating_nekro_data_dir"))
+
+                    update_env_file(env_path, "NEKRO_DATA_DIR", dest_dir)
 
         # 3. 恢复 Docker 卷
         archived_volumes_path = os.path.join(temp_extract_dir, 'volumes')
