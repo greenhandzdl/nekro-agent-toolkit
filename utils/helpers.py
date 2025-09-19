@@ -250,13 +250,26 @@ def get_docker_compose_cmd() -> Optional[str]:
         Optional[str]: 如果找到，返回 'docker-compose' 或 'docker compose' 字符串；
                     如果两者都未找到，则返回 None。
     """
+    # 1. 检测 `docker compose` (v2)
+    try:
+        result = subprocess.run(
+            "docker compose --version", 
+            shell=True, 
+            stdout=subprocess.DEVNULL, 
+            stderr=subprocess.DEVNULL
+        )
+        if result.returncode == 0:
+            return "docker compose"
+    except Exception:
+        pass  # 忽略异常，继续检测下一个命令
+
+    # 2. 检测 `docker-compose` (v1)
     if command_exists("docker-compose"):
         return "docker-compose"
-    try:
-        subprocess.run("docker compose version", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return "docker compose"
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return None
+
+    # 3. 如果两者都未找到，返回 None
+    print(_('no_docker_compose_command_found'))
+    return None
 
 def run_sudo_command(command, description, env=None):
     """尝试以当前用户权限运行命令，如果失败则使用 sudo 提权后重试。
