@@ -7,7 +7,7 @@ import sys
 
 from module.install import install_agent
 from module.update import update_agent
-from module.backup import backup_agent, recover_agent, recover_and_install_agent
+from module.backup import backup_agent, recover_agent
 from utils.helpers import get_command_prefix, get_version_info, set_default_data_dir, get_default_data_dir, show_default_data_dir, confirm_use_default_data_dir
 from utils.i18n import get_message as _
 
@@ -180,10 +180,11 @@ def main():
         else:
             print(_("error_prefix") + " " + _("recover_install_description"))
             sys.exit(1)
-            
-        recover_and_install_agent(
-            backup_file=backup_file, 
-            install_dir=install_dir,
+        # 先恢复
+        recover_agent(backup_file, install_dir, non_interactive=args.yes)
+        # 再安装
+        install_agent(
+            nekro_data_dir=install_dir,
             with_napcat=args.with_napcat,
             dry_run=args.dry_run,
             non_interactive=args.yes

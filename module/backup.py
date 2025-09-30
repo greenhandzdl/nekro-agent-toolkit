@@ -146,52 +146,6 @@ def get_user_confirmation() -> bool:
         print(f"\n{_('operation_cancelled')}")
         return False
 
-def recover_and_install_agent(backup_file: str, install_dir: str, **kwargs):
-    """恢复数据，然后在其上执行安装流程。"""
-    dry_run = kwargs.get('dry_run', False)
-
-    if dry_run:
-        print(_("dry_run_mode_start"))
-        print(_('dry_run_will_restore_from', backup_file))
-        print(_('dry_run_data_extract_to', install_dir))
-        print(_('dry_run_docker_volumes_restore'))
-        print(_('dry_run_install_on_extracted'))
-        print(_("dry_run_not_executed"))
-        print(_("dry_run_mode_end"))
-        return
-
-    print(_("recovery_install_start"))
-    
-    # 1. 确定解压出的数据根目录名
-    print(_("analyzing_backup_file"))
-    archive_root = get_archive_root_dir(backup_file)
-    if not archive_root:
-        print(_("warning_cannot_determine_data_dir"), file=sys.stderr)
-        # 即使没有主数据目录，也可能需要恢复卷，所以流程继续
-
-    # 2. 调用 recover_agent 进行解压 (非交互模式)
-    print(_('restoring_backup_to', install_dir))
-    if not recover_agent(backup_file, install_dir, non_interactive=True):
-        print(_('recovery_step_failed'), file=sys.stderr)
-        return
-
-    # 3. 确定解压后的数据目录的完整路径
-    if archive_root:
-        recovered_data_path = os.path.join(install_dir, archive_root)
-        if not os.path.isdir(recovered_data_path):
-            print(_("expected_directory_not_found", recovered_data_path), file=sys.stderr)
-            # 即使数据目录恢复失败，安装流程可能仍需继续（例如，如果它能处理空目录）
-        
-        # 4. 在解压出的目录上执行安装流程
-        print(_("recovery_install_data_restored", recovered_data_path))
-        install_agent(nekro_data_dir=recovered_data_path, **kwargs)
-    else:
-        # 如果没有找到数据根目录，可能需要一个默认或空的目录来运行安装
-        print(_("recovery_install_no_data_dir"))
-        install_agent(nekro_data_dir=install_dir, **kwargs)
-
-    print(_("recovery_install_end"))
-
 
 def main():
     """备份与恢复工具的独立命令行入口。"""
