@@ -147,42 +147,26 @@ def get_docker_volumes_for_recovery(volume_names: List[str]) -> Dict[str, str]:
     """为恢复操作获取或创建指定的 Docker 卷。
 
     在新环境中恢复时，如果 Docker 卷不存在，会自动创建它们。
+    统一使用容器方式恢复，不区分平台。
 
     Args:
         volume_names (list[str]): 要查询或创建的 Docker 卷名称列表。
 
     Returns:
-        dict[str, str]: 一个字典，键是卷名，值是其状态信息或备份方法标识。
+        dict[str, str]: 一个字典，键是卷名，值是恢复方法标识（统一为"container_restore"）。
     """
     if not command_exists("docker"):
         print(_("warning_docker_not_found_skip_recovery"), file=sys.stderr)
         return {}
 
     volume_info = {}
-    system = platform.system()
     
     for name in volume_names:
         # 先尝试创建卷（如果不存在）
         if create_docker_volume_if_not_exists(name):
-            if system == "Linux":
-                try:
-                    # 在 Linux 系统上，获取卷的挂载点
-                    result = subprocess.run(
-                        ["docker", "volume", "inspect", name],
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    )
-                    volume_data = json.loads(result.stdout)
-                    mountpoint = volume_data[0]['Mountpoint']
-                    volume_info[name] = mountpoint
-                    print(f"  - {_('will_restore_docker_volume_to_path', name, mountpoint)}")
-                except (subprocess.CalledProcessError, json.JSONDecodeError, IndexError, KeyError) as e:
-                    print(_("warning_cannot_get_volume_mountpoint", name, e), file=sys.stderr)
-            else:
-                # 在 macOS/Windows 系统上，使用容器方式恢复
-                volume_info[name] = "container_backup"
-                print(f"  - {_('will_restore_docker_volume_via_container', name)}")
+            # 统一使用容器方式恢复，不区分平台
+            volume_info[name] = "container_restore"
+            print(f"  - {_('will_restore_docker_volume_via_container', name)}")
     
     return volume_info
 
@@ -296,6 +280,8 @@ def backup_docker_volume_via_container(volume_name: str, backup_path: str) -> bo
 def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> bool:
     """通过 Docker 容器恢复指定的 Docker 卷。
     
+    这种方法适用于所有操作系统，提供统一的恢复体验。
+    
     Args:
         volume_name (str): 要恢复的 Docker 卷名称。
         backup_path (str): 备份文件的路径。
@@ -311,13 +297,14 @@ def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> b
         print(f"  - {_('restoring_via_container_starting', volume_name)}")
         
         # 使用 ubuntu 容器来恢复卷的 tar 备份
+        # 先清理卷内容，然后解压备份
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{volume_name}:/data",
             "-v", f"{backup_dir}:/backup-dir",
             "ubuntu",
             "bash", "-c",
-            f"rm -rf /data/{{*,.*}} 2>/dev/null || true; cd /data && tar xzf /backup-dir/{backup_filename} --strip 1"
+            f"cd /data && rm -rf ./* ./.[!.]* ./..?* 2>/dev/null || true && tar xzf /backup-dir/{backup_filename} --strip-components=1"
         ]
         
         subprocess.run(cmd, check=True, capture_output=True)
@@ -506,8 +493,6 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
         # 3. 恢复 Docker 卷
         archived_volumes_path = os.path.join(temp_extract_dir, 'volumes')
         if os.path.isdir(archived_volumes_path):
-            system = platform.system()
-            
             for volume_backup_file in os.listdir(archived_volumes_path):
                 if volume_backup_file.endswith('.tar.gz'):
                     volume_name = volume_backup_file[:-7]  # 移除 .tar.gz 后缀
@@ -515,24 +500,9 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
                     if volume_name in volume_mountpoints:
                         volume_backup_path = os.path.join(archived_volumes_path, volume_backup_file)
                         
-                        if system == "Linux":
-                            # 在 Linux 上可以直接操作挂载点
-                            target_mountpoint = volume_mountpoints[volume_name]
-                            print(_('restoring_docker_volume', volume_name, target_mountpoint))
-                            
-                            # 清理目标挂载点并解压
-                            if os.path.isdir(target_mountpoint):
-                                shutil.rmtree(target_mountpoint)
-                                os.makedirs(target_mountpoint)
-                            
-                            subprocess.run([
-                                "tar", "xzf", volume_backup_path, 
-                                "-C", target_mountpoint, "--strip", "1"
-                            ], check=True)
-                        else:
-                            # 在 macOS/Windows 上通过容器恢复
-                            print(_('restoring_docker_volume_via_container', volume_name))
-                            restore_docker_volume_via_container(volume_name, volume_backup_path)
+                        # 统一使用容器方式恢复，不区分平台
+                        print(_('restoring_docker_volume_via_container', volume_name))
+                        restore_docker_volume_via_container(volume_name, volume_backup_path)
                     else:
                         print(_('volume_backup_skipped', volume_name), file=sys.stderr)
 
