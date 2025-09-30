@@ -37,7 +37,6 @@ def get_volumes_to_backup(static_volumes: List[str], volume_suffixes: List[str])
         print(f"  - {_('no_matching_volumes_using_static', static_volumes)}")
         return static_volumes
 
-
 def get_user_confirmation() -> bool:
     """获取用户的确认。"""
     try:
@@ -49,8 +48,6 @@ def get_user_confirmation() -> bool:
     except (EOFError, KeyboardInterrupt):
         print(f"\n{_('operation_cancelled')}")
         return False
-
-
 
 def discover_docker_volumes_by_pattern(suffixes: Optional[List[str]] = None) -> List[str]:
     """根据后缀模式动态发现 Docker 卷。
@@ -315,6 +312,41 @@ def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> b
         print(_('restore_docker_volume_failed', volume_name, e), file=sys.stderr)
         return False
 
+
+def restore_docker_volume_from_directory(volume_name: str, source_dir: str) -> bool:
+    """通过 Docker 容器从目录恢复指定的 Docker 卷。
+    
+    用于恢复直接以目录形式存储的卷备份。
+    
+    Args:
+        volume_name (str): 要恢复的 Docker 卷名称。
+        source_dir (str): 包含卷数据的源目录路径。
+        
+    Returns:
+        bool: 恢复成功返回 True，失败返回 False。
+    """
+    try:
+        print(f"  - {_('restoring_via_container_starting', volume_name)}")
+        
+        # 使用 ubuntu 容器来恢复卷的目录数据
+        # 先清理卷内容，然后复制数据
+        cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{volume_name}:/data",
+            "-v", f"{source_dir}:/source-data",
+            "ubuntu",
+            "bash", "-c",
+            "cd /data && rm -rf ./* ./.[!.]* ./..?* 2>/dev/null || true && cp -a /source-data/. /data/"
+        ]
+        
+        subprocess.run(cmd, check=True, capture_output=True)
+        print(f"  - {_('restoring_via_container_complete', volume_name)}")
+        return True
+        
+    except subprocess.CalledProcessError as e:
+        print(_('restore_docker_volume_failed', volume_name, e), file=sys.stderr)
+        return False
+
 def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optional[str]:
     """创建一个包含多个源目录的压缩归档文件。
 
@@ -493,16 +525,26 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
         # 3. 恢复 Docker 卷
         archived_volumes_path = os.path.join(temp_extract_dir, 'volumes')
         if os.path.isdir(archived_volumes_path):
-            for volume_backup_file in os.listdir(archived_volumes_path):
-                if volume_backup_file.endswith('.tar.gz'):
-                    volume_name = volume_backup_file[:-7]  # 移除 .tar.gz 后缀
+            for item in os.listdir(archived_volumes_path):
+                item_path = os.path.join(archived_volumes_path, item)
+                
+                if item.endswith('.tar.gz'):
+                    # 处理 .tar.gz 格式的卷备份（容器备份方式）
+                    volume_name = item[:-7]  # 移除 .tar.gz 后缀
                     
                     if volume_name in volume_mountpoints:
-                        volume_backup_path = os.path.join(archived_volumes_path, volume_backup_file)
-                        
-                        # 统一使用容器方式恢复，不区分平台
                         print(_('restoring_docker_volume_via_container', volume_name))
-                        restore_docker_volume_via_container(volume_name, volume_backup_path)
+                        restore_docker_volume_via_container(volume_name, item_path)
+                    else:
+                        print(_('volume_backup_skipped', volume_name), file=sys.stderr)
+                        
+                elif os.path.isdir(item_path):
+                    # 处理目录格式的卷备份（直接路径备份方式）
+                    volume_name = item
+                    
+                    if volume_name in volume_mountpoints:
+                        print(_('restoring_docker_volume_from_directory', volume_name))
+                        restore_docker_volume_from_directory(volume_name, item_path)
                     else:
                         print(_('volume_backup_skipped', volume_name), file=sys.stderr)
 
