@@ -8,10 +8,47 @@ import sys
 import tempfile
 import json
 import platform
+import shutil
 from typing import Union, Optional, Dict, List
 
 from utils.helpers import command_exists, update_env_file
 from utils.i18n import get_message as _
+
+
+def get_volumes_to_backup(static_volumes: List[str], volume_suffixes: List[str]) -> List[str]:
+    """获取需要备份的 Docker 卷列表。
+    
+    优先使用动态发现，如果没有发现卷则回退到静态配置。
+    
+    Args:
+        static_volumes: 静态配置的卷列表
+        volume_suffixes: 用于动态发现的卷名后缀列表
+    
+    Returns:
+        list[str]: 需要备份的 Docker 卷名列表。
+    """
+    # 先尝试动态发现
+    discovered_volumes = discover_docker_volumes_by_pattern(suffixes=volume_suffixes)
+    
+    if discovered_volumes:
+        print(f"  - {_('discovered_docker_volumes', len(discovered_volumes))}")
+        return discovered_volumes
+    else:
+        print(f"  - {_('no_matching_volumes_using_static', static_volumes)}")
+        return static_volumes
+
+
+def get_user_confirmation() -> bool:
+    """获取用户的确认。"""
+    try:
+        response = input(_('confirm_continue'))
+        if response.lower() != 'y':
+            print(_("operation_cancelled"))
+            return False
+        return True
+    except (EOFError, KeyboardInterrupt):
+        print(f"\n{_('operation_cancelled')}")
+        return False
 
 
 
@@ -449,15 +486,12 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
                     d = os.path.join(dest_dir, item)
                     if os.path.exists(d):
                         if os.path.isdir(d):
-                            import shutil
                             shutil.rmtree(d)
                         else:
                             os.remove(d)
                     if os.path.isdir(s):
-                        import shutil
                         shutil.copytree(s, d)
                     else:
-                        import shutil
                         shutil.copy2(s, d)
 
             # 获取dest_dir绝对路径
@@ -488,7 +522,6 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
                             
                             # 清理目标挂载点并解压
                             if os.path.isdir(target_mountpoint):
-                                import shutil
                                 shutil.rmtree(target_mountpoint)
                                 os.makedirs(target_mountpoint)
                             
@@ -509,7 +542,6 @@ def extract_archive(archive_path: str, dest_dir: str, volume_mountpoints: Option
         print(_('error_archive_extraction_failed', e), file=sys.stderr)
         return False
     finally:
-        import shutil
         shutil.rmtree(temp_extract_dir)
 
 

@@ -9,30 +9,14 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from utils.backup_utils import create_archive, extract_archive, get_archive_root_dir, get_docker_volumes, get_docker_volumes_for_recovery, discover_docker_volumes_by_pattern
+from utils.backup_utils import (
+    create_archive, extract_archive, get_archive_root_dir, 
+    get_docker_volumes, get_docker_volumes_for_recovery, 
+    get_volumes_to_backup, get_user_confirmation
+)
 from module.install import install_agent
 from utils.i18n import get_message as _
 from conf.backup_settings import DOCKER_VOLUMES_TO_BACKUP, DOCKER_VOLUME_SUFFIXES
-
-def get_volumes_to_backup():
-    """获取需要备份的 Docker 卷列表。
-    
-    优先使用动态发现，如果没有发现卷则回退到静态配置。
-    
-    Returns:
-        list[str]: 需要备份的 Docker 卷名列表。
-    """
-    # 先尝试动态发现
-    discovered_volumes = discover_docker_volumes_by_pattern(
-        suffixes=DOCKER_VOLUME_SUFFIXES
-    )
-    
-    if discovered_volumes:
-        print(f"  - {_('discovered_docker_volumes', len(discovered_volumes))}")
-        return discovered_volumes
-    else:
-        print(f"  - {_('no_matching_volumes_using_static', DOCKER_VOLUMES_TO_BACKUP)}")
-        return DOCKER_VOLUMES_TO_BACKUP
 
 def backup_agent(data_dir: str, backup_dir: str):
     """备份 Nekro Agent 数据及相关的 Docker 卷。"""
@@ -57,7 +41,7 @@ def backup_agent(data_dir: str, backup_dir: str):
 
     # 2. 获取并添加 Docker 卷路径
     print(f"\n{_('finding_docker_volumes_backup')}")
-    volumes_to_backup = get_volumes_to_backup()
+    volumes_to_backup = get_volumes_to_backup(DOCKER_VOLUMES_TO_BACKUP, DOCKER_VOLUME_SUFFIXES)
     volume_paths = get_docker_volumes(volumes_to_backup)
     for name, path_or_method in volume_paths.items():
         if path_or_method == "container_backup":
@@ -109,7 +93,7 @@ def recover_agent(backup_file: str, data_dir: str, non_interactive: bool = False
 
     # 1. 查找需要恢复的 Docker 卷
     print(f"\n{_('finding_docker_volumes_recovery')}")
-    volumes_to_backup = get_volumes_to_backup()
+    volumes_to_backup = get_volumes_to_backup(DOCKER_VOLUMES_TO_BACKUP, DOCKER_VOLUME_SUFFIXES)
     available_volumes = get_docker_volumes_for_recovery(volumes_to_backup)
     
     if available_volumes and not non_interactive:
@@ -132,18 +116,6 @@ def recover_agent(backup_file: str, data_dir: str, non_interactive: bool = False
         return True
     else:
         print(f"\n{_('recovery_failed')}")
-        return False
-
-def get_user_confirmation() -> bool:
-    """获取用户的确认。"""
-    try:
-        response = input(_('confirm_continue'))
-        if response.lower() != 'y':
-            print(_("operation_cancelled"))
-            return False
-        return True
-    except (EOFError, KeyboardInterrupt):
-        print(f"\n{_('operation_cancelled')}")
         return False
 
 
