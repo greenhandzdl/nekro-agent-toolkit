@@ -282,4 +282,5 @@ MESSAGES = {
     "confirm_use_default_data_dir": "检测到默认数据目录: {}\n是否使用默认目录？这等效于运行: {}\n继续？ (y/N): ",
     "clear_default_data_dir_prompt": "输入 'clear' 以清除默认数据目录设置: ",
     "clear_cancelled": "清除操作已取消。",
+    "unknown_system_permission": "未知系统，未设置权限: {0}",
 }

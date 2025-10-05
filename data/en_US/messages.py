@@ -282,4 +282,5 @@ MESSAGES = {
     "confirm_use_default_data_dir": "Detected default data directory: {}\nUse default directory? This is equivalent to running: {}\nContinue? (y/N): ",
     "clear_default_data_dir_prompt": "Enter 'clear' to clear default data directory setting: ",
     "clear_cancelled": "Clear operation cancelled.",
+    "unknown_system_permission": "Unknown system, permission not set: {0}",
 }

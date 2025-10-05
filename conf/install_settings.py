@@ -8,3 +8,6 @@ BASE_URLS = [
     "https://raw.gitcode.com/gh_mirrors/ne/nekro-agent/raw/main/docker",
     "http://hk-yd-proxy.gitwarp.com:6699/https://raw.githubusercontent.com/KroMiose/nekro-agent/main/docker"
 ]
+
+# 应用数据目录权限的项目约定
+DATA_DIR_MODE = 0o755  # 可根据实际需要修改，推荐 0o755

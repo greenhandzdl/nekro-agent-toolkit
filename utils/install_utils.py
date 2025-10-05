@@ -15,6 +15,58 @@ from utils.i18n import get_message as _
 
 
 
+def set_directory_permissions(path):
+    """
+    根据项目约定和平台设置目录权限，支持跨语言/平台适配。
+    优先读取 conf/install_settings.DATA_DIR_MODE 配置项。
+    遇到权限问题时自动尝试 sudo 提权（仅类 Unix 系统）。
+    """
+    import stat
+    import platform
+    try:
+        from conf import install_settings
+        mode = getattr(install_settings, 'DATA_DIR_MODE', None)
+    except Exception:
+        mode = None
+    system = platform.system()
+    if mode is None:
+        # 未配置时按平台默认
+        if system in ["Linux", "Darwin"]:
+            mode = 0o755
+        elif system == "Windows":
+            mode = stat.S_IWRITE
+        else:
+            print(_("unknown_system_permission", system))
+            return
+    if system in ["Linux", "Darwin"]:
+        try:
+            for root, dirs, files in os.walk(path):
+                for d in dirs:
+                    os.chmod(os.path.join(root, d), mode)
+                for f in files:
+                    os.chmod(os.path.join(root, f), mode)
+            os.chmod(path, mode)
+        except PermissionError as e:
+            print(_("setting_directory_permissions"))
+            print(_("warning_chmod_777"))
+            print(_("error_create_app_directory", path, e))
+            # 自动尝试 sudo 提权
+            run_sudo_command(f"chmod -R {oct(mode)[2:]} {path}", _("setting_directory_permissions"))
+    elif system == "Windows":
+        try:
+            for root, dirs, files in os.walk(path):
+                for d in dirs:
+                    os.chmod(os.path.join(root, d), mode)
+                for f in files:
+                    os.chmod(os.path.join(root, f), mode)
+            os.chmod(path, mode)
+        except PermissionError as e:
+            print(_("error_create_app_directory", path, e))
+            print(_("unknown_system_permission", system))
+    else:
+        print(_("unknown_system_permission", system))
+
+
 def setup_directories(nekro_data_dir):
     """创建应用数据目录，设置权限，并切换当前工作目录到该目录。
 
@@ -31,9 +83,11 @@ def setup_directories(nekro_data_dir):
     except OSError as e:
         print(_("error_create_app_directory", nekro_data_dir, e), file=sys.stderr)
         sys.exit(1)
-    
-    print(_("warning_chmod_777"))
-    run_sudo_command(f"chmod -R 777 {nekro_data_dir}", _("setting_directory_permissions"))
+
+    # print(_("warning_chmod_777"))
+
+    set_directory_permissions(nekro_data_dir)
+    print(_("setting_directory_permissions"))
 
     os.chdir(nekro_data_dir)
     print(_("switched_to_directory", os.getcwd()))
