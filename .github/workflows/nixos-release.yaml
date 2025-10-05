@@ -1,0 +1,31 @@
+name: Build NixOS nekro-agent-toolkit VMDK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-vmdk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v23
+        with:
+          extra_nix_config_lines: |
+            experimental-features = nix-command flakes
+
+      - name: Install nixos-generators
+        run: nix-env -iA nixos-generators -f https://github.com/nix-community/nixos-generators/archive/master.tar.gz
+
+      - name: Build VMDK image
+        run: |
+          mkdir -p build
+          nixos-generate -f vmdk -c release/nixos/nekro-agent-toolkit.nix -o build/nekro-agent-toolkit.vmdk
+
+      - name: Upload VMDK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nekro-agent-toolkit-vmdk
+          path: build/nekro-agent-toolkit.vmdk
