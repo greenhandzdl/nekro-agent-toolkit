@@ -16,13 +16,10 @@ jobs:
           extra_nix_config_lines: |
             experimental-features = nix-command flakes
 
-      - name: Check nixos-generators formats
-        run: nix run github:nix-community/nixos-generators -- --list
-
-      - name: Build QCOW2 image
+      - name: Build QCOW2 image (from GitHub flake)
         run: |
           mkdir -p build
-          nix run github:nix-community/nixos-generators -- -f qcow --flake ./release/nixos#nekro-agent-toolkit -o build/nekro-agent-toolkit.qcow2
+          nix run github:nix-community/nixos-generators --no-write-lock-file -- -f qcow --flake github:greenhandzdl/nekro-agent-toolkit?dir=release/nixos#nekro-agent-toolkit -o build/nekro-agent-toolkit.qcow2
 
       - name: Convert QCOW2 to VMDK
         run: |
@@ -31,8 +28,7 @@ jobs:
 
       - name: Package images
         run: |
-          cd build
-          zip nekro-agent-toolkit-images.zip nekro-agent-toolkit.qcow2 nekro-agent-toolkit.vmdk
+          zip build/nekro-agent-toolkit-images.zip build/nekro-agent-toolkit.qcow2 build/nekro-agent-toolkit.vmdk
 
       - name: Upload images artifact
         uses: actions/upload-artifact@v4
