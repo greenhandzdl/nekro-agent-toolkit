@@ -6,7 +6,8 @@ Nekro Agent 安装脚本的辅助函数模块。
 import os
 import shutil
 import sys
-
+import stat
+import platform
 from .helpers import (
     command_exists, get_docker_compose_cmd, run_sudo_command, get_remote_file,
     update_env_file, get_env_value, populate_env_secrets
@@ -21,8 +22,6 @@ def set_directory_permissions(path):
     优先读取 conf/install_settings.DATA_DIR_MODE 配置项。
     遇到权限问题时自动尝试 sudo 提权（仅类 Unix 系统）。
     """
-    import stat
-    import platform
     try:
         from conf import install_settings
         mode = getattr(install_settings, 'DATA_DIR_MODE', None)

@@ -272,7 +272,7 @@ def get_docker_compose_cmd() -> Optional[str]:
     return None
 
 def run_sudo_command(command, description, env=None):
-    """尝试以当前用户权限运行命令，如果失败则使用 sudo 提权后重试。
+    """尝试以当前用户权限运行命令，如果失败则允许用户选择重试、提权或退出。
 
     参数:
         command (str): 需要执行的命令。
@@ -280,38 +280,53 @@ def run_sudo_command(command, description, env=None):
         env (dict, optional): 为命令设置的环境变量。
     """
     print(_("executing_command", description))
-    
-    # 准备环境
     cmd_env = os.environ.copy()
     if env:
         cmd_env.update(env)
 
-    try:
-        # 1. 尝试直接运行
-        subprocess.run(command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=cmd_env)
-        print(_('execute_with_current_user_success'))
-        return
-    except subprocess.CalledProcessError:
-        # 2. 如果失败，则尝试 sudo
-        print(_('insufficient_permissions_try_sudo'))
-        
-        # 构建 sudo 命令
-        sudo_command = f"sudo -E {command}"
-
+    tried_sudo = False
+    while True:
         try:
-            # 使用 `shell=True`，并传递合并后的环境
-            subprocess.run(sudo_command, shell=True, check=True, env=cmd_env)
-            print(_("sudo_elevation_success"))
+            if not tried_sudo:
+                subprocess.run(command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=cmd_env)
+                print(_('execute_with_current_user_success'))
+                return
+            else:
+                sudo_command = f"sudo -E {command}"
+                subprocess.run(sudo_command, shell=True, check=True, env=cmd_env)
+                print(_("sudo_elevation_success"))
+                return
         except subprocess.CalledProcessError as e:
-            print(_('error_sudo_failed', description, e), file=sys.stderr)
-            sys.exit(1)
+            if not tried_sudo:
+                print(_('insufficient_permissions_try_sudo'))
+                while True:
+                    choice = input(_("command_failed_retry_sudo_exit")).strip().lower()
+                    if choice in ['r']:
+                        break  # 重试当前用户
+                    elif choice in ['y']:
+                        tried_sudo = True
+                        break  # 尝试 sudo
+                    elif choice in ['n']:
+                        print(_("exited"))
+                        sys.exit(1)
+                    else:
+                        print(_("invalid_input_retry"))
+            else:
+                print(_('error_sudo_failed', description, e), file=sys.stderr)
+                while True:
+                    choice = input(_("sudo_failed_retry_exit")).strip().lower()
+                    if choice in ['r', 'y']:
+                        # 重试 sudo
+                        break
+                    elif choice in ['n']:
+                        print(_("exited"))
+                        sys.exit(1)
+                    else:
+                        print(_("invalid_input_retry"))
         except FileNotFoundError:
-            print(_("error_sudo_not_found"), file=sys.stderr)
+            cmd_name = command.split()[0]
+            print(_("error_command_not_found", cmd_name), file=sys.stderr)
             sys.exit(1)
-    except FileNotFoundError:
-        cmd_name = command.split()[0]
-        print(_("error_command_not_found", cmd_name), file=sys.stderr)
-        sys.exit(1)
 
 
 def check_dependencies():

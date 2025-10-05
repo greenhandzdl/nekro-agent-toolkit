@@ -283,4 +283,8 @@ MESSAGES = {
     "clear_default_data_dir_prompt": "Enter 'clear' to clear default data directory setting: ",
     "clear_cancelled": "Clear operation cancelled.",
     "unknown_system_permission": "Unknown system, permission not set: {0}",
+    "command_failed_retry_sudo_exit": "Command failed. Retry(r/R), elevate(y/Y), or exit(n/N):",
+    "sudo_failed_retry_exit": "Sudo failed. Retry(r/R/y/Y) or exit(n/N):",
+    "invalid_input_retry": "Invalid input, please choose again.",
+    "exited": "Exited.",
 }

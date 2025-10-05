@@ -283,4 +283,8 @@ MESSAGES = {
     "clear_default_data_dir_prompt": "输入 'clear' 以清除默认数据目录设置: ",
     "clear_cancelled": "清除操作已取消。",
     "unknown_system_permission": "未知系统，未设置权限: {0}",
+    "command_failed_retry_sudo_exit": "命令执行失败。重试(r/R)，提权(y/Y)，退出(n/N)：",
+    "sudo_failed_retry_exit": "sudo 提权后仍失败。重试(r/R/y/Y)，退出(n/N)：",
+    "invalid_input_retry": "无效输入，请重新选择。",
+    "exited": "已退出。",
 }
