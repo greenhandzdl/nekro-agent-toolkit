@@ -17,15 +17,25 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Check nixos-generators formats
-        run: nix run github:nix-community/nixos-generators -- --help
+        run: nix run github:nix-community/nixos-generators -- --list
 
-      - name: Build VMDK image
+      - name: Build QCOW2 image
         run: |
           mkdir -p build
-          nix run github:nix-community/nixos-generators -- -f vmdk --flake ./release/nixos#nekro-agent-toolkit -o build/nekro-agent-toolkit.vmdk
+          nix run github:nix-community/nixos-generators -- -f qcow --flake ./release/nixos#nekro-agent-toolkit -o build/nekro-agent-toolkit.qcow2
 
-      - name: Upload VMDK artifact
+      - name: Convert QCOW2 to VMDK
+        run: |
+          sudo apt-get update && sudo apt-get install -y qemu-utils zip
+          qemu-img convert -O vmdk build/nekro-agent-toolkit.qcow2 build/nekro-agent-toolkit.vmdk
+
+      - name: Package images
+        run: |
+          cd build
+          zip nekro-agent-toolkit-images.zip nekro-agent-toolkit.qcow2 nekro-agent-toolkit.vmdk
+
+      - name: Upload images artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nekro-agent-toolkit-vmdk
-          path: build/nekro-agent-toolkit.vmdk
+          name: nekro-agent-toolkit-images
+          path: build/nekro-agent-toolkit-images.zip
