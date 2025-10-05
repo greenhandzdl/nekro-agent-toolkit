@@ -18,6 +18,8 @@ cd "$SCRIPT_DIR"
 # 文件路径
 PYPROJECT_FILE="pyproject.toml"
 INSTALL_FILE="module/install.py"
+# Nix 包定义文件路径
+NIX_FILE="release/nix/nekro-agent-toolkit.nix"
 
 # 函数：打印带颜色的消息
 print_info() {
@@ -99,6 +101,19 @@ update_install() {
     print_info "检查 $INSTALL_FILE (当前无需更新版本信息)"
 }
 
+# 函数：更新 Nix 包定义文件中的版本号
+update_nix_version() {
+    local new_version="$1"
+    if [[ ! -f "$NIX_FILE" ]]; then
+        print_warn "文件不存在: $NIX_FILE，跳过 Nix 包版本更新"
+        return 0
+    fi
+    cp "$NIX_FILE" "$NIX_FILE.bak"
+    sed -i.tmp "s/^  version = \".*\";/  version = \"$new_version\";/" "$NIX_FILE"
+    rm "$NIX_FILE.tmp"
+    print_info "已更新 $NIX_FILE 中的版本"
+}
+
 # 函数：验证文件存在
 check_files() {
     local missing_files=()
@@ -157,9 +172,15 @@ main() {
     # 执行更新
     print_info "开始更新版本..."
     
+    # 更新 pyproject.toml
     update_pyproject "$new_version"
+
+    # 更新 install.py（如有必要）
     update_install "$new_version"
-    
+
+    # 更新 Nix 包定义文件
+    update_nix_version "$new_version"
+
     print_info "版本更新完成!"
     print_info "已创建备份文件: $PYPROJECT_FILE.bak"
     
