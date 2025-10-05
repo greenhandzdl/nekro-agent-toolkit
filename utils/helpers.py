@@ -287,38 +287,42 @@ def run_sudo_command(command, description, env=None):
     tried_sudo = False
     while True:
         try:
-            if not tried_sudo:
-                subprocess.run(command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=cmd_env)
-                print(_('execute_with_current_user_success'))
-                return
-            else:
-                sudo_command = f"sudo -E {command}"
-                subprocess.run(sudo_command, shell=True, check=True, env=cmd_env)
-                print(_("sudo_elevation_success"))
-                return
+            cmd_to_run = command if not tried_sudo else f"sudo -E {command}"
+            result = subprocess.run(
+                cmd_to_run,
+                shell=True,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                env=cmd_env
+            )
+            print(_("sudo_elevation_success") if tried_sudo else _('execute_with_current_user_success'))
+            return
         except subprocess.CalledProcessError as e:
             if not tried_sudo:
                 print(_('insufficient_permissions_try_sudo'))
                 while True:
                     choice = input(_("command_failed_retry_sudo_exit")).strip().lower()
-                    if choice in ['r']:
+                    if choice == 'r':
                         break  # 重试当前用户
-                    elif choice in ['y']:
+                    elif choice == 'y':
                         tried_sudo = True
                         break  # 尝试 sudo
-                    elif choice in ['n']:
+                    elif choice == 'n':
                         print(_("exited"))
                         sys.exit(1)
                     else:
                         print(_("invalid_input_retry"))
             else:
-                print(_('error_sudo_failed', description, e), file=sys.stderr)
+                print(_('error_sudo_failed', description), file=sys.stderr)
+                print(f"Return code: {e.returncode}")
+                if e.stderr:
+                    print(f"Error output: {e.stderr.decode() if hasattr(e.stderr, 'decode') else e.stderr}")
                 while True:
                     choice = input(_("sudo_failed_retry_exit")).strip().lower()
-                    if choice in ['r', 'y']:
-                        # 重试 sudo
-                        break
-                    elif choice in ['n']:
+                    if choice == 'r':
+                        continue  # 重新进入 while True 循环，重试 sudo
+                    elif choice == 'n':
                         print(_("exited"))
                         sys.exit(1)
                     else:
