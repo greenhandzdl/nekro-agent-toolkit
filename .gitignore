@@ -198,3 +198,4 @@ na_backup*.tar*
 
 # Generate Logs
 *_log.txt
+*bak

@@ -145,25 +145,30 @@ def confirm_installation():
         print(f"\n{_('installation_cancelled')}")
         sys.exit(0)
 
-def download_compose_file(with_napcat_arg):
+def download_compose_file(with_napcat_arg, non_interactive=False):
     """根据用户选择，下载合适的 docker-compose.yml 文件。
 
     如果用户未通过命令行参数指定，则会交互式地询问是否需要 NapCat 版本。
 
     参数:
         with_napcat_arg (bool): 从命令行参数传入的是否使用 NapCat 的标志。
+        non_interactive (bool): 是否跳过交互式确认步骤，默认为 False。
 
     返回:
         bool: 最终确认的是否使用 NapCat 的状态。
     """
     with_napcat = with_napcat_arg
-    if not with_napcat:
+    if not with_napcat and not non_interactive:
         try:
             yn = input(_('use_napcat_service'))
             if yn.lower() in ['', 'y', 'yes']:
                 with_napcat = True
         except (EOFError, KeyboardInterrupt):
             print(f"\n{_('default_no_napcat')}")  
+    elif not with_napcat and non_interactive:
+        # 在非交互模式下，默认不使用 NapCat
+        print(f"\n{_('default_no_napcat')}")
+        with_napcat = False
 
     compose_filename = "docker-compose-x-napcat.yml" if with_napcat else "docker-compose.yml"
     print(_("getting_compose_file", compose_filename))

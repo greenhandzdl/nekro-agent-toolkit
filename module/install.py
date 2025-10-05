@@ -39,7 +39,7 @@ def install_agent(nekro_data_dir: str, with_napcat: bool = False, dry_run: bool 
     if not non_interactive:
         confirm_installation()
     
-    final_with_napcat = download_compose_file(with_napcat)
+    final_with_napcat = download_compose_file(with_napcat, non_interactive=non_interactive)
     run_docker_operations(docker_compose_cmd, env_path)
     configure_firewall(env_path, final_with_napcat)
     print_summary(env_path, final_with_napcat)

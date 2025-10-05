@@ -272,49 +272,85 @@ def get_docker_compose_cmd() -> Optional[str]:
     return None
 
 def run_sudo_command(command, description, env=None):
+    """
+    执行需要提升权限的命令，自动处理权限不足的情况，提供提权选项
+    
+    Args:
+        command (str): 要执行的命令
+        description (str): 命令的描述，用于用户界面显示
+        env (dict, optional): 要添加到环境变量中的键值对，默认为 None
+    
+    Returns:
+        None: 该函数在成功执行时返回，失败时退出程序
+    
+    Logic:
+        1. 首先在当前用户权限下尝试执行命令
+        2. 如果执行失败（权限不足），询问用户是否使用sudo提权
+        3. 用户可以选择重试、提权或退出
+        4. 如果命令不存在，直接报错退出
+    """
+    # 打印正在执行的操作描述
     print(_("executing_command", description))
+    
+    # 创建环境变量副本，如果提供了额外环境变量则合并
     cmd_env = os.environ.copy()
     if env:
         cmd_env.update(env)
 
+    # 标记是否已经尝试过sudo，用于控制重试逻辑
     tried_sudo = False
+    
+    # 主循环：处理命令执行和可能的权限提升
     while True:
         try:
+            # 根据是否已尝试sudo决定是否添加sudo前缀
             cmd_to_run = command if not tried_sudo else f"sudo -E {command}"
+            
+            # 执行命令，使用shell=True以支持管道等shell特性
+            # 捕获stderr以便在出错时显示详细信息
             result = subprocess.run(
                 cmd_to_run,
                 shell=True,
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE,
-                env=cmd_env
+                check=True,                    # 非零退出码时抛出异常
+                stdout=subprocess.DEVNULL,     # 不输出标准输出
+                stderr=subprocess.PIPE,        # 捕获错误输出
+                env=cmd_env                    # 使用合并后的环境变量
             )
+            
+            # 执行成功，根据是否使用了sudo显示不同成功信息
             print(_("sudo_elevation_success") if tried_sudo else _('execute_with_current_user_success'))
-            return
+            return  # 成功执行后返回
         except subprocess.CalledProcessError as e:
+            # 命令执行失败（非零退出码）
             if not tried_sudo:
+                # 首次失败，提示权限不足，建议提权
                 print(_('insufficient_permissions_try_sudo'))
             else:
+                # 已经使用sudo但仍失败，显示详细错误信息
                 print(_('error_sudo_failed', description), file=sys.stderr)
                 print(f"Return code: {e.returncode}")
                 if e.stderr:
                     print(f"Error output: {e.stderr.decode() if hasattr(e.stderr, 'decode') else e.stderr}")
+            
+            # 进入交互模式，让用户选择如何处理失败
             while True:
+                # 根据是否已尝试sudo显示不同的提示信息
                 choice = input(_("command_failed_retry_sudo_exit" if not tried_sudo else "sudo_failed_retry_exit")).strip().lower()
                 if choice == 'r':
-                    break  # 重试当前模式
+                    break  # 重试当前模式（不提权或已提权）
                 elif choice == 'y':
                     if not tried_sudo:
-                        tried_sudo = True  # 切换到 sudo
+                        tried_sudo = True  # 首次失败后，下次尝试使用sudo
                         break
                     else:
-                        break  # 已提权时 y 也是重试
+                        break  # 已经sudo后仍然失败，继续重试sudo模式
                 elif choice == 'n':
-                    print(_("exited"))
+                    print(_("exited"))  # 用户选择退出
                     sys.exit(1)
                 else:
-                    print(_("invalid_input_retry"))
+                    print(_("invalid_input_retry"))  # 无效输入，重新提示
         except FileNotFoundError:
+            # 命令不存在的情况
             cmd_name = command.split()[0]
             print(_("error_command_not_found", cmd_name), file=sys.stderr)
             sys.exit(1)
