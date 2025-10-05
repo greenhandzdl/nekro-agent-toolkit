@@ -16,10 +16,13 @@ jobs:
           extra_nix_config_lines: |
             experimental-features = nix-command flakes
 
+      - name: Check nixos-generators formats
+        run: nix run github:nix-community/nixos-generators -- --help
+
       - name: Build VMDK image
         run: |
           mkdir -p build
-          nix run github:nix-community/nixos-generators -- -f vmdk -c release/nixos/nekro-agent-toolkit.nix -o build/nekro-agent-toolkit.vmdk
+          nix run github:nix-community/nixos-generators -- vmdk -c release/nixos/nekro-agent-toolkit.nix -o build/nekro-agent-toolkit.vmdk
 
       - name: Upload VMDK artifact
         uses: actions/upload-artifact@v4
