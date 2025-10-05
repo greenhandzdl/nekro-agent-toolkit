@@ -22,7 +22,8 @@ jobs:
       - name: Build VMDK image
         run: |
           mkdir -p build
-          nix run github:nix-community/nixos-generators -- vmdk -c release/nixos/nekro-agent-toolkit.nix -o build/nekro-agent-toolkit.vmdk
+          nix build ./release/nixos#nixosConfigurations.nekro-agent-toolkit.config.formats.vmdk
+          mv result/nekro-agent-toolkit.vmdk build/nekro-agent-toolkit.vmdk
 
       - name: Upload VMDK artifact
         uses: actions/upload-artifact@v4
