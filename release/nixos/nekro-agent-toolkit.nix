@@ -19,18 +19,12 @@ in
     pipx
     docker
     docker-compose
-    ufw
     zstd
     nekroAgentToolkit
   ];
 
   # 启用 docker 服务
   virtualisation.docker.enable = true;
-
-  # 启用 ufw 防火墙（如需自定义规则可扩展）
-  services.ufw.enable = true;
-  services.ufw.defaultInputPolicy = "accept";
-  services.ufw.defaultOutputPolicy = "accept";
 
   # 允许 wheel 组用户 sudo
   security.sudo.wheelNeedsPassword = false;
