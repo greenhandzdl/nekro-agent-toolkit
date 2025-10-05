@@ -25,7 +25,7 @@ in
   ];
 
   # 启用 docker 服务
-  services.docker.enable = true;
+  virtualisation.docker.enable = true;
 
   # 启用 ufw 防火墙（如需自定义规则可扩展）
   services.ufw.enable = true;
