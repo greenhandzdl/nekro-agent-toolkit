@@ -272,13 +272,6 @@ def get_docker_compose_cmd() -> Optional[str]:
     return None
 
 def run_sudo_command(command, description, env=None):
-    """尝试以当前用户权限运行命令，如果失败则允许用户选择重试、提权或退出。
-
-    参数:
-        command (str): 需要执行的命令。
-        description (str): 对正在执行的操作的简短描述。
-        env (dict, optional): 为命令设置的环境变量。
-    """
     print(_("executing_command", description))
     cmd_env = os.environ.copy()
     if env:
@@ -301,32 +294,26 @@ def run_sudo_command(command, description, env=None):
         except subprocess.CalledProcessError as e:
             if not tried_sudo:
                 print(_('insufficient_permissions_try_sudo'))
-                while True:
-                    choice = input(_("command_failed_retry_sudo_exit")).strip().lower()
-                    if choice == 'r':
-                        break  # 重试当前用户
-                    elif choice == 'y':
-                        tried_sudo = True
-                        break  # 尝试 sudo
-                    elif choice == 'n':
-                        print(_("exited"))
-                        sys.exit(1)
-                    else:
-                        print(_("invalid_input_retry"))
             else:
                 print(_('error_sudo_failed', description), file=sys.stderr)
                 print(f"Return code: {e.returncode}")
                 if e.stderr:
                     print(f"Error output: {e.stderr.decode() if hasattr(e.stderr, 'decode') else e.stderr}")
-                while True:
-                    choice = input(_("sudo_failed_retry_exit")).strip().lower()
-                    if choice == 'r':
-                        continue  # 重新进入 while True 循环，重试 sudo
-                    elif choice == 'n':
-                        print(_("exited"))
-                        sys.exit(1)
+            while True:
+                choice = input(_("command_failed_retry_sudo_exit" if not tried_sudo else "sudo_failed_retry_exit")).strip().lower()
+                if choice == 'r':
+                    break  # 重试当前模式
+                elif choice == 'y':
+                    if not tried_sudo:
+                        tried_sudo = True  # 切换到 sudo
+                        break
                     else:
-                        print(_("invalid_input_retry"))
+                        break  # 已提权时 y 也是重试
+                elif choice == 'n':
+                    print(_("exited"))
+                    sys.exit(1)
+                else:
+                    print(_("invalid_input_retry"))
         except FileNotFoundError:
             cmd_name = command.split()[0]
             print(_("error_command_not_found", cmd_name), file=sys.stderr)
