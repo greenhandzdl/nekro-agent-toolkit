@@ -418,13 +418,15 @@ def update_env_file(env_path, key, value):
         key (str): 要更新或添加的配置项名称。
         value (str): 要设置的配置项的值。
     """
+    import platform
     system = platform.system()
     
     # 在 Windows 上，如果文件存在，先尝试设置权限
     if system == "Windows" and os.path.exists(env_path):
         try:
             import subprocess
-            subprocess.run(["icacls", env_path, "/grant", "Everyone:F"], check=True, 
+            # 使用 /C 参数即使遇到错误也继续处理
+            subprocess.run(["icacls", env_path, "/grant", "Everyone:F", "/C"], check=True, 
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             # 如果权限设置失败，继续尝试写入
@@ -445,8 +447,27 @@ def update_env_file(env_path, key, value):
     if not found:
         lines.append(f"{key}={value}\n")
 
-    with open(env_path, 'w', encoding='utf-8') as f:
-        f.writelines(lines)
+    # 尝试写入文件，如果出现权限错误则重试一次
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            with open(env_path, 'w', encoding='utf-8') as f:
+                f.writelines(lines)
+            break  # 成功则跳出循环
+        except PermissionError:
+            if attempt < max_retries - 1:  # 如果不是最后一次尝试
+                import time
+                time.sleep(1)  # 等待一秒后重试
+                # 再次尝试设置权限
+                if system == "Windows":
+                    try:
+                        import subprocess
+                        subprocess.run(["icacls", env_path, "/grant", "Everyone:F", "/C"], check=True, 
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    except Exception:
+                        pass  # 权限设置失败，继续重试
+            else:
+                raise  # 重试次数用完，抛出异常
 
 def get_env_value(env_path, key):
     """从 .env 文件中获取指定键的值。

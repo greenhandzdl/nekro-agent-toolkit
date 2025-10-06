@@ -28,7 +28,7 @@ def set_directory_permissions(path):
     # Windows 系统权限设置
     if system == "Windows":
         try:
-            subprocess.run(["icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T"], check=True,
+            subprocess.run(["icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T", "/C"], check=True,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             print(_("windows_icacls_permission_success", path))
         except Exception as icacls_e:
@@ -129,6 +129,17 @@ def configure_env_file(nekro_data_dir, original_cwd):
                 sys.exit(1)
             shutil.copy(env_example_path, env_path)
             print(_("env_file_created"))
+        
+        # 在 Windows 上，为新创建的 .env 文件设置适当的权限
+        import platform
+        if platform.system() == "Windows":
+            try:
+                import subprocess
+                subprocess.run(["icacls", env_path, "/grant", "Everyone:F", "/C"], check=True,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception as e:
+                # 记录权限设置失败，但继续执行
+                print(_("windows_icacls_permission_failed", env_path, e))
 
     print(_("updating_nekro_data_dir"))
     update_env_file(env_path, "NEKRO_DATA_DIR", nekro_data_dir)
