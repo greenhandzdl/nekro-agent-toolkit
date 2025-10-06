@@ -14,8 +14,6 @@
 这个脚本尽量保持简单：自动 pull 每个镜像，然后一次性 docker save 并写入 gzip 文件（流式写入，节省内存）。
 """
 
-from __future__ import annotations
-
 import argparse
 import gzip
 import os

@@ -16,8 +16,6 @@ import_docker_images.py
  - 可选导入后列出镜像和删除源文件
 """
 
-from __future__ import annotations
-
 import argparse
 import gzip
 import os

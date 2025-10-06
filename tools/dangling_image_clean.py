@@ -18,8 +18,6 @@ Python 版本的 Docker 悬空镜像清理脚本（等价于 tools/dangling-imag
 
 """
 
-from __future__ import annotations
-
 import argparse
 import shutil
 import subprocess
