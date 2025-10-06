@@ -421,17 +421,6 @@ def update_env_file(env_path, key, value):
     import platform
     system = platform.system()
     
-    # 在 Windows 上，如果文件存在，先尝试设置权限
-    if system == "Windows" and os.path.exists(env_path):
-        try:
-            import subprocess
-            # 使用 /C 参数即使遇到错误也继续处理
-            subprocess.run(["icacls", env_path, "/grant", "Everyone:F", "/C"], check=True, 
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception:
-            # 如果权限设置失败，继续尝试写入
-            pass
-    
     lines = []
     if os.path.exists(env_path):
         with open(env_path, 'r', encoding='utf-8') as f:
@@ -447,27 +436,44 @@ def update_env_file(env_path, key, value):
     if not found:
         lines.append(f"{key}={value}\n")
 
-    # 尝试写入文件，如果出现权限错误则重试一次
-    max_retries = 2
-    for attempt in range(max_retries):
+    # 在 Windows 上使用临时文件写入策略，避免文件锁定问题
+    if system == "Windows":
+        import tempfile
+        import stat
+        
+        # 先尝试移除只读属性
         try:
-            with open(env_path, 'w', encoding='utf-8') as f:
-                f.writelines(lines)
-            break  # 成功则跳出循环
+            os.chmod(env_path, stat.S_IWRITE | stat.S_IREAD)
+        except Exception:
+            pass  # 如果无法更改属性，继续尝试写入
+        
+        # 创建临时文件
+        temp_fd, temp_path = tempfile.mkstemp(dir=os.path.dirname(env_path), suffix='.tmp')
+        try:
+            with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmp_file:
+                tmp_file.writelines(lines)
+            
+            # 将临时文件移动到目标位置
+            # Windows 上使用 os.replace 替换原文件
+            os.replace(temp_path, env_path)
         except PermissionError:
-            if attempt < max_retries - 1:  # 如果不是最后一次尝试
-                import time
-                time.sleep(1)  # 等待一秒后重试
-                # 再次尝试设置权限
-                if system == "Windows":
-                    try:
-                        import subprocess
-                        subprocess.run(["icacls", env_path, "/grant", "Everyone:F", "/C"], check=True, 
-                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                    except Exception:
-                        pass  # 权限设置失败，继续重试
-            else:
-                raise  # 重试次数用完，抛出异常
+            # 如果还是失败，则尝试使用重试机制
+            max_retries = 2
+            for attempt in range(max_retries):
+                try:
+                    with open(env_path, 'w', encoding='utf-8') as f:
+                        f.writelines(lines)
+                    break  # 成功则跳出循环
+                except PermissionError:
+                    if attempt < max_retries - 1:  # 如果不是最后一次尝试
+                        import time
+                        time.sleep(1)  # 等待一秒后重试
+                    else:
+                        raise  # 重试次数用完，抛出异常
+    else:
+        # 非 Windows 系统，直接写入文件
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
 
 def get_env_value(env_path, key):
     """从 .env 文件中获取指定键的值。

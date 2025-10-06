@@ -25,34 +25,29 @@ def set_directory_permissions(path):
     """
     system = platform.system()
     
-    # Windows 系统权限设置
     if system == "Windows":
+        # Windows 系统权限设置
         try:
             subprocess.run(["icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T", "/C"], check=True,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             print(_("windows_icacls_permission_success", path))
         except Exception as icacls_e:
             print(_("windows_icacls_permission_failed", path, icacls_e))
-        return
-    
-    # 非 Windows 系统权限设置
-    # 获取权限模式配置
-    try:
-        from conf import install_settings
-        mode = getattr(install_settings, 'DATA_DIR_MODE', None)
-    except Exception:
-        mode = None
-    
-    if mode is None:
-        # 未配置时按平台默认
-        if system in ["Linux", "Darwin"]:
+    elif system in ["Linux", "Darwin"]:
+        # 获取权限模式配置
+        try:
+            from conf import install_settings
+            mode = getattr(install_settings, 'DATA_DIR_MODE', None)
+        except Exception:
+            mode = None
+        
+        if mode is None:
             mode = 0o777  # rwxrwxrwx
-        else:
-            print(_("unknown_system_permission", system))
-            return
-
-    # 应用 POSIX 权限到目录和文件
-    _apply_posix_permissions(path, mode)
+        
+        # 应用 POSIX 权限到目录和文件
+        _apply_posix_permissions(path, mode)
+    else:
+        print(_("unknown_system_permission", system))
 
 
 def _apply_posix_permissions(path, mode):
