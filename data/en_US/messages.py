@@ -287,4 +287,8 @@ MESSAGES = {
     "sudo_failed_retry_exit": "Sudo failed. Retry(r/R/y/Y) or exit(n/N):",
     "invalid_input_retry": "Invalid input, please choose again.",
     "exited": "Exited.",
+    
+    # docker-compose file existence related
+    "compose_file_found": "Found docker-compose.yml file in current directory: {}",
+    "napcat_compose_file_found": "Found docker-compose-x-napcat.yml file in current directory: {}",
 }

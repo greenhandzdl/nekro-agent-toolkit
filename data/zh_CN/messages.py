@@ -287,4 +287,8 @@ MESSAGES = {
     "sudo_failed_retry_exit": "sudo 提权后仍失败。重试(r/R/y/Y)，退出(n/N)：",
     "invalid_input_retry": "无效输入，请重新选择。",
     "exited": "已退出。",
+    
+    # docker-compose 文件存在相关
+    "compose_file_found": "在当前目录找到 docker-compose.yml 文件: {}",
+    "napcat_compose_file_found": "在当前目录找到 docker-compose-x-napcat.yml 文件: {}",
 }

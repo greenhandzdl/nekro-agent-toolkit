@@ -170,6 +170,9 @@ def download_compose_file(with_napcat_arg, non_interactive=False):
     返回:
         bool: 最终确认的是否使用 NapCat 的状态。
     """
+    import platform
+    system = platform.system()
+    
     with_napcat = with_napcat_arg
     if not with_napcat and not non_interactive:
         try:
@@ -184,8 +187,20 @@ def download_compose_file(with_napcat_arg, non_interactive=False):
         with_napcat = False
 
     compose_filename = "docker-compose-x-napcat.yml" if with_napcat else "docker-compose.yml"
+    target_file = "docker-compose.yml"
+    
+    # 在 Windows 上，如果目标文件存在，先处理权限
+    if system == "Windows" and os.path.exists(target_file):
+        try:
+            import stat
+            # 移除只读属性
+            os.chmod(target_file, stat.S_IWRITE | stat.S_IREAD)
+        except Exception:
+            # 如果无法更改属性，继续尝试下载
+            pass
+    
     print(_('getting_compose_file', compose_filename))
-    if not get_remote_file(compose_filename, "docker-compose.yml"):
+    if not get_remote_file(compose_filename, target_file):
         print(_('error_cannot_pull_compose_file'), file=sys.stderr)
         sys.exit(1)
     return with_napcat
