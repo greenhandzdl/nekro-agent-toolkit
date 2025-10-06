@@ -232,7 +232,7 @@ MESSAGES = {
     
     # 命令执行相关
     "execute_with_current_user_success": "使用当前用户权限执行成功。",
-    "insufficient_permissions_try_sudo": "当前用户权限不足，尝试使用 sudo 提权...",
+    "insufficient_permissions_try_sudo": "当前用户可能权限不足，尝试使用 sudo 提权...",
     "error_sudo_failed": "错误: 使用 sudo 提权后，{} 仍然失败.\n{}",
     
     # 文件下载相关

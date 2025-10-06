@@ -232,7 +232,7 @@ MESSAGES = {
     
     # Command execution related
     "execute_with_current_user_success": "Executed successfully with current user permissions.",
-    "insufficient_permissions_try_sudo": "Insufficient current user permissions, trying sudo elevation...",
+    "insufficient_permissions_try_sudo": "The current user may not have sufficient permissions, try using sudo to elevate privileges...",
     "error_sudo_failed": "Error: Even after sudo elevation, {} still failed.\n{}",
     
     # File download related
