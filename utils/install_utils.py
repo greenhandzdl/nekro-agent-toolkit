@@ -52,22 +52,12 @@ def set_directory_permissions(path):
             # 自动尝试 sudo 提权
             run_sudo_command(f"chmod -R {oct(mode)[2:]} {path}", _("setting_directory_permissions"))
     elif system == "Windows":
+        # 直接使用 icacls 设置权限，避免 os.chmod 在 Windows 上的限制
         try:
-            for root, dirs, files in os.walk(path):
-                for d in dirs:
-                    os.chmod(os.path.join(root, d), stat.S_IWRITE)
-                for f in files:
-                    os.chmod(os.path.join(root, f), stat.S_IWRITE)
-            os.chmod(path, stat.S_IWRITE)
-        except PermissionError as e:
-            print(_("error_create_app_directory", path, e))
-            print(_("setting_directory_permissions"))
-            # 尝试用 icacls 提权
-            try:
-                subprocess.run(["icacls", path, "/grant", "Everyone:F", "/T"], check=True)
-                print(_("windows_icacls_permission_success", path))
-            except Exception as icacls_e:
-                print(_("windows_icacls_permission_failed", path, icacls_e))
+            subprocess.run(["icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T"], check=True)
+            print(_("windows_icacls_permission_success", path))
+        except Exception as icacls_e:
+            print(_("windows_icacls_permission_failed", path, icacls_e))
     else:
         print(_("unknown_system_permission", system))
 
