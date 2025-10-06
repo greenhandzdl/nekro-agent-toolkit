@@ -189,20 +189,53 @@ def download_compose_file(with_napcat_arg, non_interactive=False):
     compose_filename = "docker-compose-x-napcat.yml" if with_napcat else "docker-compose.yml"
     target_file = "docker-compose.yml"
     
-    # 在 Windows 上，如果目标文件存在，先处理权限
-    if system == "Windows" and os.path.exists(target_file):
+    # 在 Windows 上使用临时文件方式下载，避免权限问题
+    if system == "Windows":
+        import tempfile
+        import stat
+        
+        # 如果目标文件存在，先处理权限
+        if os.path.exists(target_file):
+            try:
+                os.chmod(target_file, stat.S_IWRITE | stat.S_IREAD)
+            except Exception:
+                pass  # 如果无法更改属性，继续
+        
+        # 创建临时文件进行下载
+        temp_fd, temp_path = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(target_file)), suffix='.tmp')
         try:
-            import stat
-            # 移除只读属性
-            os.chmod(target_file, stat.S_IWRITE | stat.S_IREAD)
-        except Exception:
-            # 如果无法更改属性，继续尝试下载
-            pass
+            # 从远程获取文件到临时文件
+            import urllib.request
+            from utils.helpers import get_remote_file
+            # 先下载到临时文件
+            if get_remote_file(compose_filename, temp_path):
+                # 将临时文件移动到目标位置
+                os.replace(temp_path, target_file)
+            else:
+                # 如果下载失败，删除临时文件
+                os.close(temp_fd)
+                os.remove(temp_path)
+                print(_('error_cannot_pull_compose_file'), file=sys.stderr)
+                sys.exit(1)
+        except Exception as e:
+            # 如果移动失败，尝试关闭临时文件句柄，然后删除
+            try:
+                os.close(temp_fd)
+            except:
+                pass
+            if os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except:
+                    pass
+            print(_('error_cannot_pull_compose_file'), file=sys.stderr)
+            sys.exit(1)
+    else:
+        print(_('getting_compose_file', compose_filename))
+        if not get_remote_file(compose_filename, target_file):
+            print(_('error_cannot_pull_compose_file'), file=sys.stderr)
+            sys.exit(1)
     
-    print(_('getting_compose_file', compose_filename))
-    if not get_remote_file(compose_filename, target_file):
-        print(_('error_cannot_pull_compose_file'), file=sys.stderr)
-        sys.exit(1)
     return with_napcat
 
 def run_docker_operations(docker_compose_cmd, env_path):
