@@ -33,7 +33,7 @@ def set_directory_permissions(path):
             print(_("windows_icacls_permission_success", path))
         except Exception as icacls_e:
             print(_("windows_icacls_permission_failed", path, icacls_e))
-    elif system in ["Linux", "Darwin"]:
+    elif system in ["Linux", "Darwin", "FreeBSD", "OpenBSD", "NetBSD"]:
         # 获取权限模式配置
         try:
             from conf import install_settings
@@ -189,52 +189,78 @@ def download_compose_file(with_napcat_arg, non_interactive=False):
     compose_filename = "docker-compose-x-napcat.yml" if with_napcat else "docker-compose.yml"
     target_file = "docker-compose.yml"
     
+    print(_('getting_compose_file', compose_filename))
+    
     # 在 Windows 上使用临时文件方式下载，避免权限问题
     if system == "Windows":
         import tempfile
         import stat
+        import shutil
         
-        # 如果目标文件存在，先处理权限
+        # 创建一个临时目录用于下载
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_file = os.path.join(temp_dir, "temp_compose.yml")
+            
+            # 尝试下载文件
+            if get_remote_file(compose_filename, temp_file):
+                # 如果文件存在，先移除或更改权限
+                if os.path.exists(target_file):
+                    try:
+                        os.chmod(target_file, stat.S_IWRITE | stat.S_IREAD)
+                        os.remove(target_file)  # 确保目标位置为空
+                    except Exception:
+                        # 如果无法删除，尝试重命名为备份
+                        backup_name = target_file + ".bak"
+                        try:
+                            shutil.move(target_file, backup_name)
+                        except Exception:
+                            pass  # 即使无法备份也继续
+                
+                # 将临时文件移动到目标位置
+                try:
+                    shutil.move(temp_file, target_file)
+                except Exception:
+                    # 如果移动失败，恢复备份文件
+                    backup_name = target_file + ".bak"
+                    if os.path.exists(backup_name):
+                        shutil.move(backup_name, target_file)
+                    print(_('error_cannot_pull_compose_file'), file=sys.stderr)
+                    sys.exit(1)
+            else:
+                print(_('error_cannot_pull_compose_file'), file=sys.stderr)
+                sys.exit(1)
+    else:
+        import stat
+        import shutil
+        
+        # 对于 POSIX 系统（Linux、macOS、BSD），处理现有文件的权限
         if os.path.exists(target_file):
             try:
                 os.chmod(target_file, stat.S_IWRITE | stat.S_IREAD)
+                os.remove(target_file)  # 确保目标位置为空
             except Exception:
-                pass  # 如果无法更改属性，继续
-        
-        # 创建临时文件进行下载
-        temp_fd, temp_path = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(target_file)), suffix='.tmp')
-        try:
-            # 从远程获取文件到临时文件
-            import urllib.request
-            from utils.helpers import get_remote_file
-            # 先下载到临时文件
-            if get_remote_file(compose_filename, temp_path):
-                # 将临时文件移动到目标位置
-                os.replace(temp_path, target_file)
-            else:
-                # 如果下载失败，删除临时文件
-                os.close(temp_fd)
-                os.remove(temp_path)
-                print(_('error_cannot_pull_compose_file'), file=sys.stderr)
-                sys.exit(1)
-        except Exception as e:
-            # 如果移动失败，尝试关闭临时文件句柄，然后删除
-            try:
-                os.close(temp_fd)
-            except:
-                pass
-            if os.path.exists(temp_path):
+                # 如果无法删除，尝试重命名为备份
+                backup_name = target_file + ".bak"
                 try:
-                    os.remove(temp_path)
-                except:
-                    pass
-            print(_('error_cannot_pull_compose_file'), file=sys.stderr)
-            sys.exit(1)
-    else:
-        print(_('getting_compose_file', compose_filename))
+                    shutil.move(target_file, backup_name)
+                except Exception:
+                    pass  # 即使无法备份也继续
+        
         if not get_remote_file(compose_filename, target_file):
+            # 如果下载失败，尝试恢复备份文件
+            backup_name = target_file + ".bak"
+            if os.path.exists(backup_name):
+                shutil.move(backup_name, target_file)
             print(_('error_cannot_pull_compose_file'), file=sys.stderr)
             sys.exit(1)
+        else:
+            # 下载成功，删除备份文件（如果存在）
+            backup_name = target_file + ".bak"
+            if os.path.exists(backup_name):
+                try:
+                    os.remove(backup_name)
+                except:
+                    pass  # 忽略删除备份文件时的错误
     
     return with_napcat
 
