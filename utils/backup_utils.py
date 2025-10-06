@@ -73,7 +73,8 @@ def discover_docker_volumes_by_pattern(suffixes: Optional[List[str]] = None) -> 
         # 获取所有 Docker 卷
         result = subprocess.run(
             ["docker", "volume", "ls", "--format", "{{.Name}}"],
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
             check=True
         )
@@ -116,7 +117,8 @@ def create_docker_volume_if_not_exists(volume_name: str) -> bool:
         # 首先检查卷是否已经存在
         result = subprocess.run(
             ["docker", "volume", "inspect", volume_name],
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
             check=True
         )
@@ -129,7 +131,8 @@ def create_docker_volume_if_not_exists(volume_name: str) -> bool:
             print(f"  - {_('creating_docker_volume', volume_name)}")
             subprocess.run(
                 ["docker", "volume", "create", volume_name],
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
                 check=True
             )
@@ -191,7 +194,8 @@ def get_docker_volumes(volume_names: List[str]) -> Dict[str, str]:
             # 使用 docker volume inspect 检查卷是否存在
             result = subprocess.run(
                 ["docker", "volume", "inspect", name],
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
                 check=True
             )
@@ -244,7 +248,7 @@ def backup_docker_volume_via_container(volume_name: str, backup_path: str) -> bo
         ]
         
         # 运行命令，不将 stderr 中的正常警告视为错误
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         
         # tar 命令可能会输出警告 "Removing leading `/' from member names"
         # 这是正常行为，只要返回码为 0 就表示成功
@@ -304,7 +308,7 @@ def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> b
             f"cd /data && rm -rf ./* ./.[!.]* ./..?* 2>/dev/null || true && tar xzf /backup-dir/{backup_filename} --strip-components=1"
         ]
         
-        subprocess.run(cmd, check=True, capture_output=True)
+        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(f"  - {_('restoring_via_container_complete', volume_name)}")
         return True
         
@@ -339,7 +343,7 @@ def restore_docker_volume_from_directory(volume_name: str, source_dir: str) -> b
             "cd /data && rm -rf ./* ./.[!.]* ./..?* 2>/dev/null || true && cp -a /source-data/. /data/"
         ]
         
-        subprocess.run(cmd, check=True, capture_output=True)
+        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(f"  - {_('restoring_via_container_complete', volume_name)}")
         return True
         

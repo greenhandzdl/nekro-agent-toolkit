@@ -182,7 +182,7 @@ def get_version_info():
             # 尝试获取当前的 Git commit SHA
             result = subprocess.run(
                 ["git", "rev-parse", "HEAD"], 
-                capture_output=True, 
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
                 text=True,
                 cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             )
@@ -192,7 +192,7 @@ def get_version_info():
                 # 检查是否有未提交的更改
                 status_result = subprocess.run(
                     ["git", "status", "--porcelain"],
-                    capture_output=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                     text=True,
                     cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 )
