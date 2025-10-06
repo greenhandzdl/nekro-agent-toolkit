@@ -28,7 +28,8 @@ def set_directory_permissions(path):
     # Windows 系统权限设置
     if system == "Windows":
         try:
-            subprocess.run(["icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T"], check=True)
+            subprocess.run(["icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T"], check=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             print(_("windows_icacls_permission_success", path))
         except Exception as icacls_e:
             print(_("windows_icacls_permission_failed", path, icacls_e))

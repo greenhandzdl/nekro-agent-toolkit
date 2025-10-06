@@ -16,6 +16,8 @@ from typing import Optional
 from conf.install_settings import BASE_URLS
 from utils.i18n import get_message as _
 
+import platform
+
 # --- 默认数据目录管理 ---
 
 def get_default_data_dir_config_path():
@@ -416,6 +418,18 @@ def update_env_file(env_path, key, value):
         key (str): 要更新或添加的配置项名称。
         value (str): 要设置的配置项的值。
     """
+    system = platform.system()
+    
+    # 在 Windows 上，如果文件存在，先尝试设置权限
+    if system == "Windows" and os.path.exists(env_path):
+        try:
+            import subprocess
+            subprocess.run(["icacls", env_path, "/grant", "Everyone:F"], check=True, 
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            # 如果权限设置失败，继续尝试写入
+            pass
+    
     lines = []
     if os.path.exists(env_path):
         with open(env_path, 'r', encoding='utf-8') as f:
