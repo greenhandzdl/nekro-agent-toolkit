@@ -9,11 +9,11 @@ import sys
 import stat
 import platform
 from .helpers import (
-    command_exists, get_docker_compose_cmd, run_sudo_command, get_remote_file,
+    command_exists, run_sudo_command, get_remote_file,
     update_env_file, get_env_value, populate_env_secrets
 )
 from utils.i18n import get_message as _
-
+import subprocess
 
 
 def set_directory_permissions(path):
@@ -31,9 +31,9 @@ def set_directory_permissions(path):
     if mode is None:
         # 未配置时按平台默认
         if system in ["Linux", "Darwin"]:
-            mode = 0o755
+            mode = 0o777  # rwxrwxrwx
         elif system == "Windows":
-            mode = stat.S_IWRITE
+            mode = stat.S_IWRITE  | stat.S_IREAD | stat.S_IEXEC
         else:
             print(_("unknown_system_permission", system))
             return
@@ -47,19 +47,25 @@ def set_directory_permissions(path):
             os.chmod(path, mode)
         except PermissionError as e:
             print(_("setting_directory_permissions"))
-            print(_("warning_chmod_777"))
             print(_("error_create_app_directory", path, e))
             # 自动尝试 sudo 提权
             run_sudo_command(f"chmod -R {oct(mode)[2:]} {path}", _("setting_directory_permissions"))
     elif system == "Windows":
         try:
+            # 优先使用 icacls 递归赋予 Everyone 完全控制权限（F），等价于 777
+            result = subprocess.run([
+                "icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T", "/C"
+            ], capture_output=True, text=True)
+            if result.returncode != 0:
+                print(_("error_create_app_directory", path, result.stderr))
+            # 兜底使用 os.chmod
             for root, dirs, files in os.walk(path):
                 for d in dirs:
                     os.chmod(os.path.join(root, d), mode)
                 for f in files:
                     os.chmod(os.path.join(root, f), mode)
             os.chmod(path, mode)
-        except PermissionError as e:
+        except Exception as e:
             print(_("error_create_app_directory", path, e))
             print(_("unknown_system_permission", system))
     else:
@@ -83,7 +89,7 @@ def setup_directories(nekro_data_dir):
         print(_("error_create_app_directory", nekro_data_dir, e), file=sys.stderr)
         sys.exit(1)
 
-    # print(_("warning_chmod_777"))
+    print(_("warning_chmod_777"))
 
     set_directory_permissions(nekro_data_dir)
     print(_("setting_directory_permissions"))
@@ -135,14 +141,14 @@ def confirm_installation():
 
     如果用户输入 'n' 或 'no'，脚本将中止。
     """
-    print(f"\n{_('check_env_config')}")
+    print(_('check_env_config'))
     try:
         yn = input(_('confirm_installation'))
         if yn.lower() not in ['', 'y', 'yes']:
             print(_('installation_cancelled'))
             sys.exit(0)
     except (EOFError, KeyboardInterrupt):
-        print(f"\n{_('installation_cancelled')}")
+        print('\n' + _('installation_cancelled'))
         sys.exit(0)
 
 def download_compose_file(with_napcat_arg, non_interactive=False):
@@ -164,16 +170,16 @@ def download_compose_file(with_napcat_arg, non_interactive=False):
             if yn.lower() in ['', 'y', 'yes']:
                 with_napcat = True
         except (EOFError, KeyboardInterrupt):
-            print(f"\n{_('default_no_napcat')}")  
+            print('\n' + _('default_no_napcat'))
     elif not with_napcat and non_interactive:
         # 在非交互模式下，默认不使用 NapCat
-        print(f"\n{_('default_no_napcat')}")
+        print('\n' + _('default_no_napcat'))
         with_napcat = False
 
     compose_filename = "docker-compose-x-napcat.yml" if with_napcat else "docker-compose.yml"
-    print(_("getting_compose_file", compose_filename))
+    print(_('getting_compose_file', compose_filename))
     if not get_remote_file(compose_filename, "docker-compose.yml"):
-        print(_("error_cannot_pull_compose_file"), file=sys.stderr)
+        print(_('error_cannot_pull_compose_file'), file=sys.stderr)
         sys.exit(1)
     return with_napcat
 
@@ -184,18 +190,16 @@ def run_docker_operations(docker_compose_cmd, env_path):
         docker_compose_cmd (str): 要使用的 docker-compose 命令。
         env_path (str): .env 文件的路径，用于 docker-compose 的 --env-file 参数。
     """
-    env_file_arg = f"--env-file {env_path}"
-    
+    env_file_arg = "--env-file {}".format(env_path)
     # 准备 Docker 环境
     docker_env = {}
     docker_host = os.environ.get('DOCKER_HOST')
     if docker_host and docker_host.startswith('/'):
-        print(_("detected_docker_host_correcting", docker_host, docker_host))
-        docker_env['DOCKER_HOST'] = f"unix://{docker_host}"
-
-    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} pull", _("pulling_service_images"), env=docker_env)
-    run_sudo_command(f"{docker_compose_cmd} {env_file_arg} up -d", _("starting_main_service"), env=docker_env)
-    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", _("pulling_sandbox_image"), env=docker_env)
+        print(_('detected_docker_host_correcting', docker_host, docker_host))
+        docker_env['DOCKER_HOST'] = "unix://{}".format(docker_host)
+    run_sudo_command("{} {} pull".format(docker_compose_cmd, env_file_arg), _('pulling_service_images'), env=docker_env)
+    run_sudo_command("{} {} up -d".format(docker_compose_cmd, env_file_arg), _('starting_main_service'), env=docker_env)
+    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", _('pulling_sandbox_image'), env=docker_env)
 
 def configure_firewall(env_path, with_napcat):
     """如果 ufw 防火墙存在，则为其配置端口转发规则。
@@ -208,16 +212,15 @@ def configure_firewall(env_path, with_napcat):
         return
 
     nekro_port = get_env_value(env_path, "NEKRO_EXPOSE_PORT") or "8021"
-    print(f"\n{_('nekro_agent_needs_port', nekro_port)}")
+    print('\n' + _('nekro_agent_needs_port', nekro_port))
     if with_napcat:
         napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
-        print(_("napcat_needs_port", napcat_port))
-
-    print(_("configuring_firewall_ufw"))
-    run_sudo_command(f"ufw allow {nekro_port}/tcp", _("allow_port", nekro_port))
+        print(_('napcat_needs_port', napcat_port))
+    print(_('configuring_firewall_ufw'))
+    run_sudo_command("ufw allow {}/tcp".format(nekro_port), _('allow_port', nekro_port))
     if with_napcat:
         napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
-        run_sudo_command(f"ufw allow {napcat_port}/tcp", _("allow_port", napcat_port))
+        run_sudo_command("ufw allow {}/tcp".format(napcat_port), _('allow_port', napcat_port))
 
 def print_summary(env_path, with_napcat):
     """在安装结束后，打印包含重要访问信息和下一步操作的摘要。
@@ -231,18 +234,18 @@ def print_summary(env_path, with_napcat):
     admin_pass = get_env_value(env_path, "NEKRO_ADMIN_PASSWORD")
     nekro_port = get_env_value(env_path, "NEKRO_EXPOSE_PORT") or "8021"
 
-    print(f"\n{_('deployment_complete')}")
+    print('\n' + _('deployment_complete'))
     print(_('view_logs_instruction'))
     print(_('nekro_agent_logs', instance_name))
     if with_napcat:
         napcat_port = get_env_value(env_path, "NAPCAT_EXPOSE_PORT") or "6099"
         print(_('napcat_logs', instance_name))
 
-    print(f"\n{_('important_config_info')}")
+    print('\n' + _('important_config_info'))
     print(_('onebot_access_token', onebot_token))
     print(_('admin_account', admin_pass))
 
-    print(f"\n{_('service_access_info')}")
+    print('\n' + _('service_access_info'))
     print(_('nekro_agent_port', nekro_port))
     print(_('nekro_agent_web_access', nekro_port))
     if with_napcat:
@@ -251,10 +254,10 @@ def print_summary(env_path, with_napcat):
     else:
         print(_('onebot_websocket_address', nekro_port))
     
-    print(f"\n{_('important_notes')}")
+    print('\n' + _('important_notes'))
     print(_('cloud_server_note'))
     print(_('external_access_note'))
     if with_napcat:
         print(_('napcat_qr_code_note', instance_name))
 
-    print(f"\n{_('installation_complete')}")
+    print('\n' + _('installation_complete'))
