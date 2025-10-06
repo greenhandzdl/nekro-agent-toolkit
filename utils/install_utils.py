@@ -8,12 +8,12 @@ import shutil
 import sys
 import stat
 import platform
+import subprocess
 from .helpers import (
     command_exists, run_sudo_command, get_remote_file,
     update_env_file, get_env_value, populate_env_secrets
 )
 from utils.i18n import get_message as _
-import subprocess
 
 
 def set_directory_permissions(path):
@@ -21,6 +21,7 @@ def set_directory_permissions(path):
     根据项目约定和平台设置目录权限，支持跨语言/平台适配。
     优先读取 conf/install_settings.DATA_DIR_MODE 配置项。
     遇到权限问题时自动尝试 sudo 提权（仅类 Unix 系统）。
+    Windows 下尝试 icacls 提权。
     """
     try:
         from conf import install_settings
@@ -33,7 +34,7 @@ def set_directory_permissions(path):
         if system in ["Linux", "Darwin"]:
             mode = 0o777  # rwxrwxrwx
         elif system == "Windows":
-            mode = stat.S_IWRITE  | stat.S_IREAD | stat.S_IEXEC
+            mode = stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC
         else:
             print(_("unknown_system_permission", system))
             return
@@ -52,22 +53,21 @@ def set_directory_permissions(path):
             run_sudo_command(f"chmod -R {oct(mode)[2:]} {path}", _("setting_directory_permissions"))
     elif system == "Windows":
         try:
-            # 优先使用 icacls 递归赋予 Everyone 完全控制权限（F），等价于 777
-            result = subprocess.run([
-                "icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T", "/C"
-            ], capture_output=True, text=True)
-            if result.returncode != 0:
-                print(_("error_create_app_directory", path, result.stderr))
-            # 兜底使用 os.chmod
             for root, dirs, files in os.walk(path):
                 for d in dirs:
-                    os.chmod(os.path.join(root, d), mode)
+                    os.chmod(os.path.join(root, d), stat.S_IWRITE)
                 for f in files:
-                    os.chmod(os.path.join(root, f), mode)
-            os.chmod(path, mode)
-        except Exception as e:
+                    os.chmod(os.path.join(root, f), stat.S_IWRITE)
+            os.chmod(path, stat.S_IWRITE)
+        except PermissionError as e:
             print(_("error_create_app_directory", path, e))
-            print(_("unknown_system_permission", system))
+            print(_("setting_directory_permissions"))
+            # 尝试用 icacls 提权
+            try:
+                subprocess.run(["icacls", path, "/grant", "Everyone:F", "/T"], check=True)
+                print(_("windows_icacls_permission_success", path))
+            except Exception as icacls_e:
+                print(_("windows_icacls_permission_failed", path, icacls_e))
     else:
         print(_("unknown_system_permission", system))
 
