@@ -183,7 +183,7 @@ def get_version_info():
             result = subprocess.run(
                 ["git", "rev-parse", "HEAD"], 
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
-                text=True,
+                universal_newlines=True,
                 cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             )
             if result.returncode == 0:
@@ -193,7 +193,7 @@ def get_version_info():
                 status_result = subprocess.run(
                     ["git", "status", "--porcelain"],
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                    text=True,
+                    universal_newlines=True,
                     cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 )
                 dirty = " (dirty)" if status_result.stdout.strip() else ""

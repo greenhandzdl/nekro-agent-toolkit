@@ -75,7 +75,7 @@ def discover_docker_volumes_by_pattern(suffixes: Optional[List[str]] = None) -> 
             ["docker", "volume", "ls", "--format", "{{.Name}}"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            universal_newlines=True,
             check=True
         )
         
@@ -119,7 +119,7 @@ def create_docker_volume_if_not_exists(volume_name: str) -> bool:
             ["docker", "volume", "inspect", volume_name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            universal_newlines=True,
             check=True
         )
         print(f"  - {_('docker_volume_exists', volume_name)}")
@@ -133,7 +133,7 @@ def create_docker_volume_if_not_exists(volume_name: str) -> bool:
                 ["docker", "volume", "create", volume_name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
+                universal_newlines=True,
                 check=True
             )
             print(f"  - {_('docker_volume_created', volume_name)}")
@@ -196,7 +196,7 @@ def get_docker_volumes(volume_names: List[str]) -> Dict[str, str]:
                 ["docker", "volume", "inspect", name],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
+                universal_newlines=True,
                 check=True
             )
             volume_data = json.loads(result.stdout)
@@ -248,7 +248,7 @@ def backup_docker_volume_via_container(volume_name: str, backup_path: str) -> bo
         ]
         
         # 运行命令，不将 stderr 中的正常警告视为错误
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         
         # tar 命令可能会输出警告 "Removing leading `/' from member names"
         # 这是正常行为，只要返回码为 0 就表示成功

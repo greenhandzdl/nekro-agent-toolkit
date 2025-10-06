@@ -44,7 +44,7 @@ def check_docker_available() -> None:
 def run(cmd: List[str], capture: bool = False) -> subprocess.CompletedProcess:
     try:
         if capture:
-            return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False, text=True)
+            return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False, universal_newlines=True)
         else:
             return subprocess.run(cmd, check=False)
     except FileNotFoundError:
