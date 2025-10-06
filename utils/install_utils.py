@@ -23,43 +23,53 @@ def set_directory_permissions(path):
     遇到权限问题时自动尝试 sudo 提权（仅类 Unix 系统）。
     Windows 下尝试 icacls 提权。
     """
-    try:
-        from conf import install_settings
-        mode = getattr(install_settings, 'DATA_DIR_MODE', None)
-    except Exception:
-        mode = None
     system = platform.system()
-    if mode is None:
-        # 未配置时按平台默认
-        if system in ["Linux", "Darwin"]:
-            mode = 0o777  # rwxrwxrwx
-        elif system == "Windows":
-            mode = stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC
-        else:
-            print(_("unknown_system_permission", system))
-            return
-    if system in ["Linux", "Darwin"]:
-        try:
-            for root, dirs, files in os.walk(path):
-                for d in dirs:
-                    os.chmod(os.path.join(root, d), mode)
-                for f in files:
-                    os.chmod(os.path.join(root, f), mode)
-            os.chmod(path, mode)
-        except PermissionError as e:
-            print(_("setting_directory_permissions"))
-            print(_("error_create_app_directory", path, e))
-            # 自动尝试 sudo 提权
-            run_sudo_command(f"chmod -R {oct(mode)[2:]} {path}", _("setting_directory_permissions"))
-    elif system == "Windows":
-        # 直接使用 icacls 设置权限，避免 os.chmod 在 Windows 上的限制
+    
+    # Windows 系统权限设置
+    if system == "Windows":
         try:
             subprocess.run(["icacls", path, "/grant", "Everyone:(OI)(CI)F", "/T"], check=True)
             print(_("windows_icacls_permission_success", path))
         except Exception as icacls_e:
             print(_("windows_icacls_permission_failed", path, icacls_e))
-    else:
-        print(_("unknown_system_permission", system))
+        return
+    
+    # 非 Windows 系统权限设置
+    # 获取权限模式配置
+    try:
+        from conf import install_settings
+        mode = getattr(install_settings, 'DATA_DIR_MODE', None)
+    except Exception:
+        mode = None
+    
+    if mode is None:
+        # 未配置时按平台默认
+        if system in ["Linux", "Darwin"]:
+            mode = 0o777  # rwxrwxrwx
+        else:
+            print(_("unknown_system_permission", system))
+            return
+
+    # 应用 POSIX 权限到目录和文件
+    _apply_posix_permissions(path, mode)
+
+
+def _apply_posix_permissions(path, mode):
+    """
+    内部函数：应用 POSIX 权限到路径中的所有文件和目录
+    """
+    try:
+        for root, dirs, files in os.walk(path):
+            for d in dirs:
+                os.chmod(os.path.join(root, d), mode)
+            for f in files:
+                os.chmod(os.path.join(root, f), mode)
+        os.chmod(path, mode)
+    except PermissionError as e:
+        print(_("setting_directory_permissions"))
+        print(_("error_create_app_directory", path, e))
+        # 自动尝试 sudo 提权
+        run_sudo_command(f"chmod -R {oct(mode)[2:]} {path}", _("setting_directory_permissions"))
 
 
 def setup_directories(nekro_data_dir):
