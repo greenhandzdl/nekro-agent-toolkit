@@ -186,7 +186,6 @@ cython_debug/
 
 # Generate Files
 .env*
-docker*.yml
 configs/
 logs/
 napcat_data/
