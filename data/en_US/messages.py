@@ -119,7 +119,7 @@ MESSAGES = {
     "updated_version": "Updated version: {}",
     "backup_file_created": "Backup file created: {}",
     "starting_version_update": "Starting version update...",
-    "checking_install_file": "Checking {} (no version information needs updating currently)",
+    "checking_install_file": "Checked {} (no version information needs updating currently)",
     
     # tar related
     "tar_normal_warning": "Note: tar output normal warning: {}",

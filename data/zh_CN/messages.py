@@ -119,7 +119,7 @@ MESSAGES = {
     "updated_version": "更新后版本: {}",
     "backup_file_created": "已创建备份文件: {}",
     "starting_version_update": "开始更新版本...",
-    "checking_install_file": "检查 {} (当前无需更新版本信息)",
+    "checking_install_file": "已检查 {}（当前无版本信息需要更新）",
     
     # tar 相关
     "tar_normal_warning": "注意: tar 输出了正常警告: {}",
