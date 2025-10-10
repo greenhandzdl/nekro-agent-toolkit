@@ -25,6 +25,7 @@ ENV PATH=/root/.local/bin:$PATH
 # 安装 python3、pip、pipx、bash、git
 RUN apk update && apk upgrade \
     && apk add --no-cache python3 py3-pip bash git \
+    && apk add --no-cache sudo tar zstd \
     && apk add --no-cache py3-pipx || true \
     && if apk info py3-pipx >/dev/null 2>&1; then \
         echo "pipx installed via apk"; \
@@ -43,3 +44,4 @@ EXPOSE 8021 6099
 
 # 启动 dockerd 并保持容器前台运行（使用 tail 持续占位），以便容器不自动退出，方便使用 docker exec 进入
 ENTRYPOINT ["/bin/sh", "-c", "dockerd-entrypoint.sh & tail -f /dev/null"]
+CMD ["bash"]
