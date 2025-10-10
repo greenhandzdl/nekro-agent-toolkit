@@ -25,7 +25,7 @@ ENV PATH=/root/.local/bin:$PATH
 # 安装 python3、pip、pipx、bash、git
 RUN apk update && apk upgrade \
     && apk add --no-cache python3 py3-pip bash git \
-    && apk add --no-cache sudo tar zstd \
+    && apk add --no-cache sudo tar zstd curl \
     && apk add --no-cache py3-pipx || true \
     && if apk info py3-pipx >/dev/null 2>&1; then \
         echo "pipx installed via apk"; \
@@ -41,6 +41,9 @@ RUN nekro-agent-toolkit -sd /app/nekro-agent -y
 
 # 开放容器端口，便于端口映射
 EXPOSE 8021 6099
+
+# 健康检查：检测内部服务是否就绪
+HEALTHCHECK --interval=10s --timeout=3s CMD curl -f http://127.0.0.1:8021/api/health || exit 1
 
 # 启动 dockerd 并保持容器前台运行（使用 tail 持续占位），以便容器不自动退出，方便使用 docker exec 进入
 ENTRYPOINT ["/bin/sh", "-c", "dockerd-entrypoint.sh & tail -f /dev/null"]
