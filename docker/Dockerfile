@@ -5,7 +5,7 @@
 # 3. 该容器仅仅内置了 nekro-agent-toolkit，当你需要快速搭建nekro-agent-toolkit时，请使用 nekro-agent-toolkit -i。
 #    当你需要快速恢复数据时，请上传数据包并使用 nekro-agent-toolkit -ri。
 #    示例：
-#    docker run -v ./data/nekro-agent:/app/nekro-agent -v ./data/docker-data:/var/lib/docker -p 8021:8021 -p 6099:6099 nekro-agent-toolkit:latest
+#    docker run -v ./data/nekro-agent:/app/nekro-agent -v ./data/docker-data:/var/lib/docker -p 8021:8021 -p 6099:6099 greenhandzdl/nekro-agent-toolkit:latest
 ###############################################################
 FROM docker:dind
 
