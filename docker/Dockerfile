@@ -22,6 +22,10 @@ WORKDIR /app
 USER root
 ENV PATH=/root/.local/bin:$PATH
 
+# 配置 Docker 镜像加速器
+RUN mkdir -p /etc/docker \
+    && echo '{\n  "registry-mirrors": [\n    "https://docker.xuanyuan.me",\n    "https://docker.1ms.run",\n    "https://docker.ama.moe"\n  ]\n}' > /etc/docker/daemon.json
+
 # 安装 python3、pip、pipx、bash、git
 RUN apk update && apk upgrade \
     && apk add --no-cache python3 py3-pip bash git \
