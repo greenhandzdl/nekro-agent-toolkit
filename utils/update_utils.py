@@ -8,6 +8,9 @@ import sys
 
 from .helpers import run_sudo_command
 from utils.i18n import get_message as _
+from .docker_helpers import (
+    docker_pull_image
+)
 
 def update_nekro_agent_only(docker_compose_cmd, nekro_data_dir):
     """仅更新 Nekro Agent 和沙盒镜像 (推荐)"""
@@ -20,7 +23,7 @@ def update_nekro_agent_only(docker_compose_cmd, nekro_data_dir):
         print(_("error_env_file_not_exist"), file=sys.stderr)
         sys.exit(1)
     
-    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", 
+    docker_pull_image("kromiose/nekro-agent-sandbox", 
                      _("pulling_latest_sandbox"))
     
     run_sudo_command(f"{docker_compose_cmd} --env-file .env pull nekro_agent", 

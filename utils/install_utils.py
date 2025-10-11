@@ -13,6 +13,9 @@ from .helpers import (
     command_exists, run_sudo_command, get_remote_file,
     update_env_file, get_env_value, populate_env_secrets
 )
+from .docker_helpers import (
+    docker_pull_image
+)
 from utils.i18n import get_message as _
 
 
@@ -274,7 +277,7 @@ def run_docker_operations(docker_compose_cmd, env_path):
         docker_env['DOCKER_HOST'] = "unix://{}".format(docker_host)
     run_sudo_command("{} {} pull".format(docker_compose_cmd, env_file_arg), _('pulling_service_images'), env=docker_env)
     run_sudo_command("{} {} up -d".format(docker_compose_cmd, env_file_arg), _('starting_main_service'), env=docker_env)
-    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", _('pulling_sandbox_image'), env=docker_env)
+    docker_pull_image("kromiose/nekro-agent-sandbox", _('pulling_sandbox_image'), env=docker_env)
 
 def configure_firewall(env_path, with_napcat):
     """如果 ufw 防火墙存在，则为其配置端口转发规则。
