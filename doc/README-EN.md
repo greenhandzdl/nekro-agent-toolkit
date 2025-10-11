@@ -1,67 +1,41 @@
-[以中文阅读](../README.md)
+[Read in Chinese](../README.md)
 
 # Nekro Agent Toolkit
 
-A professional toolkit for rapid deployment of Nekro Agent and related services, simplifying Docker-based QQ bot deployment.
+Nekro Agent Toolkit is an all-in-one tool for deploying, backing up, and restoring Nekro Agent and related services. It supports automated Docker management and provides a dependency management script for quickly adding dependencies.
 
-## ✨ Features
+## ✨ Main Features
 
-- **Unified Management**: Single script for all operations with smart environment detection
-- **Multi-language**: Auto-switching Chinese/English interface
-- **Default Directory**: Simplified commands with auto-fill preset directories
-- **Smart Backup**: Cross-platform Docker volume backup with dynamic discovery
-- **Version Display**: Git SHA for source, version number for pip installs
+- One-click install, upgrade, backup, and restore for Nekro Agent
+- Smart detection and multi-language support
+- Automated Docker volume backup and restore
+- Dependency management script: easily add dependencies to requirements.txt and pyproject.toml
 
-## 🚀 Installation & Usage
+## 🚀 Quick Start
 
 ### Installation
 
 ```bash
-# pip install (recommended)
 pip install nekro-agent-toolkit
-
-# Source code
+# Or run from source
 git clone https://github.com/your-repo/nekro-agent-toolkit.git
 cd nekro-agent-toolkit
-```
-
-### Default Directory Management
-
-```bash
-# Set default directory
-nekro-agent-toolkit -sd ./na_data
-
-# View current setting (enter 'clear' to clear)
-nekro-agent-toolkit -sd
 ```
 
 ### Common Commands
 
 ```bash
-# Install (can auto-use default directory)
+# Install/Upgrade/Backup/Restore
 nekro-agent-toolkit -i [PATH]
-
-# Update/Upgrade (can auto-use default directory)
-nekro-agent-toolkit -u [PATH]    # Partial update
-nekro-agent-toolkit -ua [PATH]   # Full upgrade
-
-# Backup & Recovery (can auto-use default directory)
+nekro-agent-toolkit -u [PATH]
 nekro-agent-toolkit -b [DATA_DIR] BACKUP_DIR
 nekro-agent-toolkit -r BACKUP_FILE [DATA_DIR]
-nekro-agent-toolkit -ri BACKUP_FILE [INSTALL_DIR]
 
-# Options
---with-napcat    # Deploy NapCat service
---dry-run        # Preview mode
--y               # Auto confirm
+# Add dependency to requirements.txt and pyproject.toml
+./scripts/add-dependency.sh <package_name>
 ```
 
-## 📝 Additional Info
+## Additional Info
 
-**Requirements**: Python 3.6+, Docker, Docker Compose
-
-**Optional**: zstd (fast compression), ufw (firewall)
-
-**Contributing**: See [`doc/REGULATE-EN.md`](./REGULATE-EN.md)
-
-**License**: See [Nekro Agent Project](https://github.com/KroMiose/nekro-agent) and [LICENSE](../LICENSE)
+- Requirements: Python 3.6+, Docker, Docker Compose
+- License: See [LICENSE](../LICENSE)
