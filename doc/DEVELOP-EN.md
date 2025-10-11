@@ -6,24 +6,18 @@ This document outlines the project's internal structure and module relationships
 
 ## Project Structure
 
-The project is organized into the following main directories:
+The project is organized into the following main directories and files:
 
-- `app.py`: The unified command-line entry point for the project, responsible for dispatching installation, update, and backup/recovery tasks.
-- `module/`: Modules that encapsulate core features and can be called externally.
-  - `install.py`: Provides the `install_agent` function.
-  - `update.py`: Provides the `update_agent` function.
-  - `backup.py`: Provides `backup_agent`, `recover_agent`, and `recover_and_install_agent` functions.
-- `utils/`: Contains helper functions.
-  - `helpers.py`: Low-level, shared utility functions (e.g., system commands, file operations, runtime environment detection, version information).
-  - `install_utils.py`: High-level functions for the installation process.
-  - `update_utils.py`: High-level functions for the update process.
-  - `backup_utils.py`: Low-level functions for backup/recovery (e.g., archiving, extraction, analysis, cross-platform Docker volume operations).
-  - `i18n.py`: Multi-language support management module.
-- `conf/`: Contains static configuration files.
-  - `settings.py`: Shared settings, such as remote repository URLs.
-- `data/`: Contains multi-language files.
-  - `zh_CN/messages.py`: Chinese language pack.
-  - `en_US/messages.py`: English language pack.
+- `app.py`: Unified command-line entry point, dispatching installation, update, backup/recovery, and other tasks.
+- `module/`: Core feature modules (such as install, update, backup, replace_env_vars).
+- `utils/`: Low-level and high-level utility functions (e.g., helpers, i18n, install_utils, update_utils, backup_utils, docker_helpers).
+- `conf/`: Static configuration (e.g., backup_settings, docker_mirrors, i18n_settings, install_settings).
+- `data/`: Multi-language packs (en_US, zh_CN).
+- `tools/`: Utility scripts (e.g., Docker image backup, import, cleanup, permission setup).
+- `scripts/`: Build, dependency management, message sorting, and other scripts.
+- `release/`: NixOS-related packaging configuration (nix, nixos subdirectories).
+- `docker/`: Dockerfile and related container configuration.
+- Others: pyproject.toml, setup.py, requirements.txt, and other metadata and dependency management files.
 
 ## Module Relationship Diagram
 
@@ -31,53 +25,70 @@ The following diagram illustrates how the different modules import and depend on
 
 ```mermaid
 graph TD
-    subgraph "Main Entry Point"
+    subgraph "Main Entry"
         APP["app.py"];
     end
 
-    subgraph "High-level API Modules"
+    subgraph "Core Modules"
         INSTALL["module/install.py"];
         UPDATE["module/update.py"];
         BACKUP["module/backup.py"];
+        REPLACE_ENV["module/replace_env_vars.py"];
     end
 
-    subgraph "Business Logic"
+    subgraph "Utils"
+        HELPERS["utils/helpers.py"];
+        I18N["utils/i18n.py"];
         INSTALL_UTILS["utils/install_utils.py"];
         UPDATE_UTILS["utils/update_utils.py"];
         BACKUP_UTILS["utils/backup_utils.py"];
+        DOCKER_HELPERS["utils/docker_helpers.py"];
     end
 
-    subgraph "Shared Libraries"
-        HELPERS["utils/helpers.py"];
-        I18N["utils/i18n.py"];
-        CONF["conf/settings.py"];
+    subgraph "Config"
+        CONF["conf/"];
     end
 
-    subgraph "i18n Support"
+    subgraph "i18n"
         ZH_CN["data/zh_CN/messages.py"];
         EN_US["data/en_US/messages.py"];
+    end
+
+    subgraph "Tools"
+        TOOL_SCRIPTS["tools/*"];
+    end
+
+    subgraph "Build & Deploy"
+        SCRIPTS["scripts/*"];
+        RELEASE["release/*"];
+        DOCKER["docker/Dockerfile"];
     end
 
     APP -- calls --> INSTALL;
     APP -- calls --> UPDATE;
     APP -- calls --> BACKUP;
+    APP -- calls --> REPLACE_ENV;
+    APP -- can call --> TOOL_SCRIPTS;
+    APP -- can call --> SCRIPTS;
 
     INSTALL -- calls --> INSTALL_UTILS;
     UPDATE -- calls --> UPDATE_UTILS;
     BACKUP -- calls --> BACKUP_UTILS;
     BACKUP -- calls --> INSTALL;
-    
+    REPLACE_ENV -- depends --> HELPERS;
+
     INSTALL_UTILS -- imports --> HELPERS;
     UPDATE_UTILS -- imports --> HELPERS;
     BACKUP_UTILS -- imports --> HELPERS;
-    
+    DOCKER_HELPERS -- imports --> HELPERS;
+
     INSTALL_UTILS -- uses --> I18N;
     UPDATE_UTILS -- uses --> I18N;
     BACKUP_UTILS -- uses --> I18N;
     HELPERS -- uses --> I18N;
 
     HELPERS -- imports --> CONF;
-    
+
     I18N -- loads --> ZH_CN;
     I18N -- loads --> EN_US;
 ```

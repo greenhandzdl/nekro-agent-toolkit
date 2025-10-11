@@ -6,24 +6,18 @@
 
 ## 项目结构
 
-项目被组织为以下几个主要目录：
+项目被组织为以下主要目录和文件：
 
-- `app.py`: 项目的统一命令行入口，负责调度安装、更新和备份恢复任务。
-- `module/`: 封装了核心功能的模块，可被外部调用。
-  - `install.py`: 提供 `install_agent` 函数。
-  - `update.py`: 提供 `update_agent` 函数。
-  - `backup.py`: 提供 `backup_agent`、`recover_agent` 和 `recover_and_install_agent` 函数。
-- `utils/`: 存放辅助函数。
-  - `helpers.py`: 底层的、跨模块共享的工具函数（如系统命令、文件操作、运行环境检测、版本信息获取）。
-  - `install_utils.py`: 服务于安装流程的高级函数。
-  - `update_utils.py`: 服务于更新流程的高级函数。
-  - `backup_utils.py`: 服务于备份恢复的底层函数（如打包、解压、分析归档、跨平台 Docker 卷操作）。
-  - `i18n.py`: 多语言支持管理模块。
-- `conf/`: 存放静态配置文件。
-  - `settings.py`: 共享的配置，如远程仓库 URL。
-- `data/`: 存放多语言文件。
-  - `zh_CN/messages.py`: 中文语言包。
-  - `en_US/messages.py`: 英文语言包。
+- `app.py`：项目统一命令行入口，调度安装、更新、备份恢复等任务。
+- `module/`：核心功能模块（如 install、update、backup、replace_env_vars）。
+- `utils/`：底层和高级工具函数（如 helpers、i18n、install_utils、update_utils、backup_utils、docker_helpers）。
+- `conf/`：静态配置（如 backup_settings、docker_mirrors、i18n_settings、install_settings）。
+- `data/`：多语言包（en_US、zh_CN）。
+- `tools/`：实用工具脚本（如 Docker 镜像备份、导入、清理、权限设置）。
+- `scripts/`：构建、依赖管理、消息排序等脚本。
+- `release/`：NixOS 相关打包配置（nix、nixos 子目录）。
+- `docker/`：Dockerfile 及相关容器配置。
+- 其他：pyproject.toml、setup.py、requirements.txt 等元数据和依赖管理文件。
 
 ## 模块关系图
 
@@ -31,55 +25,72 @@
 
 ```mermaid
 graph TD
-    subgraph "主入口 (Main Entry Point)"
+    subgraph "主入口/Main Entry"
         APP["app.py"];
     end
 
-    subgraph "高级 API 模块"
+    subgraph "核心功能/Core Modules"
         INSTALL["module/install.py"];
         UPDATE["module/update.py"];
         BACKUP["module/backup.py"];
+        REPLACE_ENV["module/replace_env_vars.py"];
     end
 
-    subgraph "业务逻辑 (Business Logic)"
+    subgraph "工具/Utils"
+        HELPERS["utils/helpers.py"];
+        I18N["utils/i18n.py"];
         INSTALL_UTILS["utils/install_utils.py"];
         UPDATE_UTILS["utils/update_utils.py"];
         BACKUP_UTILS["utils/backup_utils.py"];
+        DOCKER_HELPERS["utils/docker_helpers.py"];
     end
 
-    subgraph "共享库 (Shared Libraries)"
-        HELPERS["utils/helpers.py"];
-        I18N["utils/i18n.py"];
-        CONF["conf/settings.py"];
+    subgraph "配置/Config"
+        CONF["conf/"];
     end
 
-    subgraph "多语言支持 (i18n Support)"
+    subgraph "多语言/i18n"
         ZH_CN["data/zh_CN/messages.py"];
         EN_US["data/en_US/messages.py"];
     end
 
-    APP -- 调用 --> INSTALL;
-    APP -- 调用 --> UPDATE;
-    APP -- 调用 --> BACKUP;
+    subgraph "工具脚本/Tools"
+        TOOL_SCRIPTS["tools/*"];
+    end
 
-    INSTALL -- 调用 --> INSTALL_UTILS;
-    UPDATE -- 调用 --> UPDATE_UTILS;
-    BACKUP -- 调用 --> BACKUP_UTILS;
-    BACKUP -- 调用 --> INSTALL;
-    
-    INSTALL_UTILS -- 导入 --> HELPERS;
-    UPDATE_UTILS -- 导入 --> HELPERS;
-    BACKUP_UTILS -- 导入 --> HELPERS;
-    
-    INSTALL_UTILS -- 使用 --> I18N;
-    UPDATE_UTILS -- 使用 --> I18N;
-    BACKUP_UTILS -- 使用 --> I18N;
-    HELPERS -- 使用 --> I18N;
+    subgraph "构建与部署/Build & Deploy"
+        SCRIPTS["scripts/*"];
+        RELEASE["release/*"];
+        DOCKER["docker/Dockerfile"];
+    end
 
-    HELPERS -- 导入 --> CONF;
-    
-    I18N -- 加载 --> ZH_CN;
-    I18N -- 加载 --> EN_US;
+    APP -- 调用/calls --> INSTALL;
+    APP -- 调用/calls --> UPDATE;
+    APP -- 调用/calls --> BACKUP;
+    APP -- 调用/calls --> REPLACE_ENV;
+    APP -- 可调用/can call --> TOOL_SCRIPTS;
+    APP -- 可调用/can call --> SCRIPTS;
+
+    INSTALL -- 调用/calls --> INSTALL_UTILS;
+    UPDATE -- 调用/calls --> UPDATE_UTILS;
+    BACKUP -- 调用/calls --> BACKUP_UTILS;
+    BACKUP -- 调用/calls --> INSTALL;
+    REPLACE_ENV -- 依赖/depends --> HELPERS;
+
+    INSTALL_UTILS -- 导入/imports --> HELPERS;
+    UPDATE_UTILS -- 导入/imports --> HELPERS;
+    BACKUP_UTILS -- 导入/imports --> HELPERS;
+    DOCKER_HELPERS -- 导入/imports --> HELPERS;
+
+    INSTALL_UTILS -- 使用/uses --> I18N;
+    UPDATE_UTILS -- 使用/uses --> I18N;
+    BACKUP_UTILS -- 使用/uses --> I18N;
+    HELPERS -- 使用/uses --> I18N;
+
+    HELPERS -- 导入/imports --> CONF;
+
+    I18N -- 加载/loads --> ZH_CN;
+    I18N -- 加载/loads --> EN_US;
 ```
 
 ## 核心功能模块
