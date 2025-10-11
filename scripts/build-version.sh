@@ -20,10 +20,31 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# 文件路径配置
+# 自动查找项目根目录（包含 pyproject.toml 的目录）
+find_project_root() {
+    local dir="$PWD"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/pyproject.toml" ]]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
+PROJECT_ROOT="$(find_project_root)"
+if [[ -z "$PROJECT_ROOT" ]]; then
+    print_error "未找到 pyproject.toml，无法确定项目根目录。"
+    exit 1
+fi
+cd "$PROJECT_ROOT"
+
+# 文件路径配置（基于项目根目录）
 PYPROJECT_FILE="pyproject.toml"
 INSTALL_FILE="module/install.py"
 NIX_FILE="release/nix/nekro-agent-toolkit.nix"
+SETUP_FILE="setup.py"
 
 # ============================================================================
 # 辅助函数
@@ -51,6 +72,7 @@ show_usage() {
     echo ""
     echo "此脚本会更新以下文件中的版本信息:"
     echo "  - pyproject.toml"
+    echo "  - setup.py"
     echo "  - release/nix/nekro-agent-toolkit.nix"
 }
 
@@ -127,17 +149,32 @@ update_nix_version() {
     print_info "已更新 $NIX_FILE 中的版本"
 }
 
+# 函数：更新 setup.py
+update_setup_py() {
+    local new_version="$1"
+    if [[ ! -f "$SETUP_FILE" ]]; then
+        print_error "文件不存在: $SETUP_FILE"
+        return 1
+    fi
+    cp "$SETUP_FILE" "$SETUP_FILE.bak"
+    # 支持 version="x.y.z" 或 version='x.y.z'
+    sed -i.tmp -E "s/(version\s*=\s*[\"\'])[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?([\"\'])/\1${new_version}\3/" "$SETUP_FILE"
+    rm "$SETUP_FILE.tmp"
+    print_info "已更新 $SETUP_FILE 中的版本"
+}
+
 # ============================================================================
 # 验证函数
 # ============================================================================
 # 函数：验证文件存在
 check_files() {
     local missing_files=()
-    
     if [[ ! -f "$PYPROJECT_FILE" ]]; then
         missing_files+=("$PYPROJECT_FILE")
     fi
-    
+    if [[ ! -f "$SETUP_FILE" ]]; then
+        missing_files+=("$SETUP_FILE")
+    fi
     if [[ ${#missing_files[@]} -gt 0 ]]; then
         print_error "以下必需文件不存在:"
         for file in "${missing_files[@]}"; do
@@ -145,7 +182,6 @@ check_files() {
         done
         return 1
     fi
-    
     return 0
 }
 
@@ -190,20 +226,19 @@ main() {
     
     # 6. 执行版本更新
     print_info "开始更新版本..."
-    
     # 更新 pyproject.toml
     update_pyproject "$new_version"
-
+    # 更新 setup.py
+    update_setup_py "$new_version"
     # 检查 install.py（如有必要）
     update_install "$new_version"
-
     # 更新 Nix 包定义文件
     update_nix_version "$new_version"
 
     # 7. 完成提示
     print_info "版本更新完成!"
-    print_info "已创建备份文件: $PYPROJECT_FILE.bak"
-    
+    print_info "已创建备份文件: $PYPROJECT_FILE.bak, $SETUP_FILE.bak"
+
     # 显示更新后的版本信息
     local updated_version
     updated_version=$(get_current_version)

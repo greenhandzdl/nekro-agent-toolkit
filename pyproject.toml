@@ -55,3 +55,4 @@ python = ">=3.8"
 requests = "^2.32"
 
 # End of added Poetry configuration
+setuptools = "*"
