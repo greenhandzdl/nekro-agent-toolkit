@@ -24,7 +24,15 @@ ENV PATH=/root/.local/bin:$PATH
 
 # 配置 Docker 镜像加速器
 RUN mkdir -p /etc/docker \
-    && echo '{\n  "registry-mirrors": [\n    "https://docker.xuanyuan.me",\n    "https://docker.1ms.run",\n    "https://docker.ama.moe"\n  ]\n}' > /etc/docker/daemon.json
+    && cat > /etc/docker/daemon.json <<EOF
+{
+  "registry-mirrors": [
+    "https://docker.xuanyuan.me",
+    "https://docker.1ms.run",
+    "https://docker.ama.moe"
+  ]
+}
+EOF
 
 # 安装 python3、pip、pipx、bash、git
 RUN apk update && apk upgrade \
