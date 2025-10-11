@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nekro-agent-toolkit"
-version = "1.4.19"
+version = "1.5.0"
 description = "Nekro Agent 安装、更新与备份的统一管理工具"
 readme = "README.md"
 authors = [{name = "greenhandzdl"}]
@@ -15,14 +15,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 dependencies = []
 
 [project.urls]
@@ -41,3 +39,19 @@ conf = ["*.py"]
 
 [tool.setuptools]
 py-modules = ["app"]
+
+# --- Poetry support (minimal) ---
+# This section is added so the project can be managed by Poetry for
+# dependency management while retaining the existing [project] metadata.
+[tool.poetry]
+name = "nekro-agent-toolkit"
+version = "1.5.0"
+description = "Nekro Agent 安装、更新与备份的统一管理工具"
+authors = ["greenhandzdl"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.8"
+requests = "^2.32"
+
+# End of added Poetry configuration
