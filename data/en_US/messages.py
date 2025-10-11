@@ -291,4 +291,25 @@ MESSAGES = {
     # docker-compose file existence related
     "compose_file_found": "Found docker-compose.yml file in current directory: {}",
     "napcat_compose_file_found": "Found docker-compose-x-napcat.yml file in current directory: {}",
+
+    # Adding missing keys used in print statements from docker_helpers.py and helpers.py
+    "pulling_image_official": "Pulling image from official registry: {} ({})",
+    "pulling_image_mirrors": "Pulling image from mirrors: {} ({})",
+    "trying_mirror_pull": "Trying to pull from mirror: {} ({})",
+    "mirror_pull_success": "Successfully pulled from mirror: {} ({}), image: {}",
+    "mirror_pull_failed": "Failed to pull from mirror: {} ({})",
+    "all_mirrors_failed_try_official": "All mirrors failed, trying official registry: {}",
+    "official_pull_success": "Successfully pulled from official registry: {} ({})",
+    "official_pull_failed": "Failed to pull from official registry: {}",
+    "default_data_dir_cleared": "Default data directory cleared.",
+    "default_data_dir_set": "Default data directory set to: {}",
+    "current_default_data_dir": "Current default data directory: {}",
+    "clear_cancelled": "Clear operation cancelled.",
+    "no_default_data_dir": "No default data directory set.",
+    "no_docker_compose_command_found": "No docker-compose command found.",
+    "executing_command": "Executing command: {}",
+    "sudo_elevation_success": "Sudo elevation successful.",
+    "execute_with_current_user_success": "Command executed successfully with current user.",
+    "insufficient_permissions_try_sudo": "Insufficient permissions. Trying with sudo.",
+    "error_sudo_failed": "Sudo failed for command: {}"
 }

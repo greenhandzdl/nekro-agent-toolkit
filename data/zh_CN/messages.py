@@ -291,4 +291,12 @@ MESSAGES = {
     # docker-compose 文件存在相关
     "compose_file_found": "在当前目录找到 docker-compose.yml 文件: {}",
     "napcat_compose_file_found": "在当前目录找到 docker-compose-x-napcat.yml 文件: {}",
+    "pulling_image_official": "正在从官方源拉取镜像: {} ({})",
+    "pulling_image_mirrors": "正在从镜像源拉取镜像: {} ({})",
+    "trying_mirror_pull": "尝试从镜像源 '{}' 拉取镜像 '{}'",
+    "mirror_pull_success": "成功从镜像源 '{}' 拉取镜像 '{}' ({})",
+    "mirror_pull_failed": "从镜像源 '{}' 拉取失败: {}",
+    "all_mirrors_failed_try_official": "所有镜像源均失败，尝试从官方源拉取镜像 '{}'",
+    "official_pull_success": "成功从官方源拉取镜像 '{}' ({})",
+    "official_pull_failed": "从官方源拉取失败: {}",
 }
