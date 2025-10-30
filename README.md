@@ -31,6 +31,11 @@ nekro-agent-toolkit -b [DATA_DIR] BACKUP_DIR
 nekro-agent-toolkit -r BACKUP_FILE [DATA_DIR]
 ```
 
+### 使用 uv 管理依赖（推荐）
+
+本项目现在支持使用 `uv` 来管理依赖与生成可重现的锁文件 `uv.lock`。
+
+
 ## 附加信息
 
 - 系统要求：Python 3.6+，Docker，Docker Compose
