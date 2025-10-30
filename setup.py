@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="nekro-agent-toolkit",
-    version="1.5.2",
+    version="1.5.3",
     author="greenhandzdl",
     author_email="greenhandzdl@greenhandzdl.moe",
     description="Nekro Agent 安装、更新与备份的统一管理工具",

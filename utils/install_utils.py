@@ -6,15 +6,11 @@ Nekro Agent 安装脚本的辅助函数模块。
 import os
 import shutil
 import sys
-import stat
 import platform
 import subprocess
 from .helpers import (
     command_exists, run_sudo_command, get_remote_file,
     update_env_file, get_env_value, populate_env_secrets
-)
-from .docker_helpers import (
-    
 )
 from utils.i18n import get_message as _
 
