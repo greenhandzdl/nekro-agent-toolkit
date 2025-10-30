@@ -11,8 +11,10 @@ import platform
 import shutil
 from typing import Union, Optional, Dict, List
 
-from utils.helpers import command_exists, update_env_file
+from utils.helpers import command_exists, update_env_file, run_sudo_command
 from utils.i18n import get_message as _
+from utils.docker_helpers import docker_pull_image
+from conf.backup_settings import BACKUP_HELPER_IMAGE, BACKUP_HELPER_TAG
 
 
 def get_volumes_to_backup(static_volumes: List[str], volume_suffixes: List[str]) -> List[str]:
@@ -238,12 +240,26 @@ def backup_docker_volume_via_container(volume_name: str, backup_path: str) -> bo
         
         print(f"  - {_('backup_via_container_starting', volume_name)}")
         
-        # 使用 ubuntu 容器来创建卷的 tar 备份
+        # 使用配置的 helper 镜像来创建卷的 tar 备份
+        helper_image = f"{BACKUP_HELPER_IMAGE}:{BACKUP_HELPER_TAG}"
+
+        # 确保 helper 镜像可用，否则尝试拉取
+        try:
+            subprocess.run(["docker", "image", "inspect", helper_image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        except subprocess.CalledProcessError:
+            # 如果镜像不存在，使用 docker_helpers.docker_pull_image 拉取
+            print(f"  - {_('helper_image_not_found_try_pull', helper_image)}")
+            try:
+                docker_pull_image(helper_image, _('pulling_helper_image'))
+            except Exception as e:
+                print(_('error_pull_helper_image', helper_image, e), file=sys.stderr)
+                return False
+
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{volume_name}:/data",
             "-v", f"{backup_dir}:/backup-dir",
-            "ubuntu",
+            helper_image,
             "tar", "czf", f"/backup-dir/{backup_filename}", "/data"
         ]
         
@@ -297,13 +313,24 @@ def restore_docker_volume_via_container(volume_name: str, backup_path: str) -> b
         
         print(f"  - {_('restoring_via_container_starting', volume_name)}")
         
-        # 使用 ubuntu 容器来恢复卷的 tar 备份
+        # 使用配置的 helper 镜像来恢复卷的 tar 备份
         # 先清理卷内容，然后解压备份
+        helper_image = f"{BACKUP_HELPER_IMAGE}:{BACKUP_HELPER_TAG}"
+        try:
+            subprocess.run(["docker", "image", "inspect", helper_image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        except subprocess.CalledProcessError:
+            print(f"  - {_('helper_image_not_found_try_pull', helper_image)}")
+            try:
+                docker_pull_image(helper_image, _('pulling_helper_image'))
+            except Exception as e:
+                print(_('error_pull_helper_image', helper_image, e), file=sys.stderr)
+                return False
+
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{volume_name}:/data",
             "-v", f"{backup_dir}:/backup-dir",
-            "ubuntu",
+            helper_image,
             "bash", "-c",
             f"cd /data && rm -rf ./* ./.[!.]* ./..?* 2>/dev/null || true && tar xzf /backup-dir/{backup_filename} --strip-components=1"
         ]
@@ -332,13 +359,24 @@ def restore_docker_volume_from_directory(volume_name: str, source_dir: str) -> b
     try:
         print(f"  - {_('restoring_via_container_starting', volume_name)}")
         
-        # 使用 ubuntu 容器来恢复卷的目录数据
+        # 使用配置的 helper 镜像来恢复卷的目录数据
         # 先清理卷内容，然后复制数据
+        helper_image = f"{BACKUP_HELPER_IMAGE}:{BACKUP_HELPER_TAG}"
+        try:
+            subprocess.run(["docker", "image", "inspect", helper_image], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        except subprocess.CalledProcessError:
+            print(f"  - {_('helper_image_not_found_try_pull', helper_image)}")
+            try:
+                docker_pull_image(helper_image, _('pulling_helper_image'))
+            except Exception as e:
+                print(_('error_pull_helper_image', helper_image, e), file=sys.stderr)
+                return False
+
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{volume_name}:/data",
             "-v", f"{source_dir}:/source-data",
-            "ubuntu",
+            helper_image,
             "bash", "-c",
             "cd /data && rm -rf ./* ./.[!.]* ./..?* 2>/dev/null || true && cp -a /source-data/. /data/"
         ]
