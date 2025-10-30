@@ -2,7 +2,7 @@
 
 pkgs.stdenv.mkDerivation {
   pname = "nekro-agent-toolkit";
-  version = "1.5.0";
+  version = "1.5.1";
 
   src = null;
 

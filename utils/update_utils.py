@@ -23,7 +23,7 @@ def update_nekro_agent_only(docker_compose_cmd, nekro_data_dir):
         print(_("error_env_file_not_exist"), file=sys.stderr)
         sys.exit(1)
     
-    docker_pull_image("kromiose/nekro-agent-sandbox", 
+    run_sudo_command("docker pull kromiose/nekro-agent-sandbox", 
                      _("pulling_latest_sandbox"))
     
     run_sudo_command(f"{docker_compose_cmd} --env-file .env pull nekro_agent", 

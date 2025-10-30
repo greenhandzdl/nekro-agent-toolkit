@@ -399,13 +399,18 @@ def create_archive(source_paths: Dict[str, str], dest_path_base: str) -> Optiona
         if len(path_parts) >= 2 and path_parts[1] == 'uploads':
             print(f"  - {_('excluding_uploads_directory', tarinfo.name)}")
             return None
+
+        # 3.过滤根目录下的 napcat_data 文件夹
+        if len(path_parts) >= 2 and path_parts[1] == 'napcat_data':
+            print(f"  - {_('excluding_napcat_data_directory', tarinfo.name)}")
+            return None
             
-        # 3. 过滤根目录下的 .env.example 文件
+        # 4. 过滤根目录下的 .env.example 文件
         if len(path_parts) == 2 and path_parts[1] == '.env.example':
             print(f"  - {_('excluding_env_template', tarinfo.name)}")
             return None
             
-        # 4. 过滤根目录下以 ._ 开头的文件
+        # 5. 过滤根目录下以 ._ 开头的文件
         if len(path_parts) == 2 and filename.startswith('._'):
             print(f"  - {_('excluding_temp_file', tarinfo.name)}")
             return None

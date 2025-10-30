@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nekro-agent-toolkit"
-version = "1.5.0"
+version = "1.5.1"
 description = "Nekro Agent 安装、更新与备份的统一管理工具"
 readme = "README.md"
 authors = [{name = "greenhandzdl"}]
@@ -45,7 +45,7 @@ py-modules = ["app"]
 # dependency management while retaining the existing [project] metadata.
 [tool.poetry]
 name = "nekro-agent-toolkit"
-version = "1.5.0"
+version = "1.5.1"
 description = "Nekro Agent 安装、更新与备份的统一管理工具"
 authors = ["greenhandzdl"]
 license = "MIT"
