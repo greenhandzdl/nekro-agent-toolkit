@@ -1,6 +1,1 @@
-certifi==2025.10.5 ; python_version >= "3.8"
-charset-normalizer==3.4.3 ; python_version >= "3.8"
-idna==3.10 ; python_version >= "3.8"
-requests==2.32.4 ; python_version >= "3.8"
-urllib3==2.2.3 ; python_version >= "3.8"
-setuptools
+nekro-agent-toolkit==1.5.2

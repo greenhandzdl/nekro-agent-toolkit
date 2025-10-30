@@ -1,5 +1,0 @@
-# Top-level dependencies for nekro-agent-toolkit
-# Keep third-party libraries here; run `pip-compile` to generate pinned requirements.txt
-
-requests
-

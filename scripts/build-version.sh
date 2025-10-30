@@ -235,6 +235,39 @@ main() {
     # 更新 Nix 包定义文件
     update_nix_version "$new_version"
 
+    # 更新 uv 锁和生成 requirements.txt（如果可用）
+    if command -v uv >/dev/null 2>&1; then
+        print_info "检测到 uv，正在重新生成 uv.lock..."
+        uv lock --directory "$PROJECT_ROOT"
+        if [[ $? -ne 0 ]]; then
+            print_warn "uv lock 失败，跳过 uv 相关更新"
+        else
+            print_info "uv.lock 已更新，开始基于 uv.lock 生成 requirements.txt"
+            # 备份旧的 requirements.txt（如果存在）
+            if [[ -f "requirements.txt" ]]; then
+                cp requirements.txt requirements.txt.bak
+            fi
+            # 从 uv.lock 提取 name/version 对并写入 requirements.txt
+            # 该解析基于 uv.lock 的 toml 文本结构：每个 [[package]] 块中包含 name = "..." 和 version = "..."
+            # Use POSIX-compatible awk (avoid GNU-only match(..., arr) extension)
+            awk '
+            /^\[\[package\]\]/{ name=""; version=""; next }
+            /^name = /{ name=$0; sub(/^name = "/, "", name); sub(/".*$/, "", name) }
+            /^version = /{ version=$0; sub(/^version = "/, "", version); sub(/".*$/, "", version); if (name != "" && version != "") print name "==" version }
+            ' uv.lock > requirements.txt.tmp || true
+            # 移除可能的空行并替换文件
+            if [[ -f requirements.txt.tmp ]]; then
+                grep -v '^$' requirements.txt.tmp > requirements.txt || mv requirements.txt.tmp requirements.txt
+                rm -f requirements.txt.tmp
+                print_info "已生成 requirements.txt (基于 uv.lock)"
+            else
+                print_warn "未能基于 uv.lock 生成 requirements.txt"
+            fi
+        fi
+    else
+        print_warn "未检测到 uv，可手动运行 'uv lock' 来更新 uv.lock"
+    fi
+
     # 7. 完成提示
     print_info "版本更新完成!"
     print_info "已创建备份文件: $PYPROJECT_FILE.bak, $SETUP_FILE.bak"
