@@ -8,5 +8,13 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
 # 支持的语言列表
-SUPPORTED_LANGUAGES = ["zh_CN", "en_US"]
+SUPPORTED_LANGUAGES = [
+	"zh_CN",
+	"en_US",
+	"es_ES",
+	"fr_FR",
+	"ja_JP",
+	"ru_RU",
+	"ar_SA",
+]
 DEFAULT_LANGUAGE = "zh_CN"

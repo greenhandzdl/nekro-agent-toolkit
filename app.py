@@ -9,7 +9,25 @@ from module.install import install_agent
 from module.update import update_agent
 from module.backup import backup_agent, recover_agent
 from utils.helpers import get_command_prefix, get_version_info, set_default_data_dir, get_default_data_dir, show_default_data_dir, confirm_use_default_data_dir
-from utils.i18n import get_message as _
+import utils.i18n as i18n
+
+
+def _detect_lang_from_argv():
+    """从命令行快速探测 --lang / -l 参数（在 argparse 构造前使用）。"""
+    for i, a in enumerate(sys.argv):
+        if a in ('--lang', '-l') and i + 1 < len(sys.argv):
+            return sys.argv[i + 1]
+        if a.startswith('--lang='):
+            return a.split('=', 1)[1]
+    return None
+
+
+# 若用户通过 CLI 指定语言，则优先设置（这样 parser 的帮助文本会本地化）
+lang_arg = _detect_lang_from_argv()
+if lang_arg:
+    i18n.set_language(lang_arg)
+
+_ = i18n.get_message
 
 
 def main():
@@ -21,6 +39,9 @@ def main():
         epilog=_('app_examples', cmd_prefix, cmd_prefix, cmd_prefix, cmd_prefix, cmd_prefix, cmd_prefix),
         formatter_class=argparse.RawTextHelpFormatter
     )
+
+    # 可选：允许用户通过 CLI 显式指定语言
+    parser.add_argument('-l', '--lang', help='Language code (e.g., en_US, zh_CN)')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', '--install', nargs='?', const='', metavar='PATH', help=_('install_description'))

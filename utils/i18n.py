@@ -22,28 +22,41 @@ def detect_system_language():
     Returns:
         str: 语言代码 (如 zh_CN, en_US)
     """
-    # 优先检查 LANG 环境变量
-    lang_env = os.environ.get('LANG', '')
+    # 优先检查 LANG 或 LANGUAGE 环境变量（更通用的解析）
+    lang_env = os.environ.get('LANG', '') or os.environ.get('LANGUAGE', '')
     if lang_env:
-        # 处理常见的 LANG 格式，如 zh_CN.UTF-8, en_US.UTF-8
-        if 'zh_CN' in lang_env or 'zh-CN' in lang_env:
-            return "zh_CN"
-        elif 'en_US' in lang_env or 'en-US' in lang_env:
-            return "en_US"
-        elif lang_env.startswith('zh'):
-            return "zh_CN"
-        elif lang_env.startswith('en'):
-            return "en_US"
+        # 处理常见格式，如 zh_CN.UTF-8, en-US, es_ES.UTF-8
+        code = lang_env.split('.')[0]
+        code = code.replace('-', '_')
+        # 直接返回已支持的语言代码
+        if code in SUPPORTED_LANGUAGES:
+            return code
+        # 更宽松的前缀匹配（例如 zh -> zh_CN, en -> en_US, es -> es_ES 等）
+        prefix_map = {
+            'zh': 'zh_CN',
+            'en': 'en_US',
+            'es': 'es_ES',
+            'fr': 'fr_FR',
+            'ja': 'ja_JP',
+            'ru': 'ru_RU',
+            'ar': 'ar_SA',
+        }
+        for pfx, target in prefix_map.items():
+            if code.startswith(pfx):
+                return target if target in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
     
-    # 回退到 locale 检测
+    # 回退到 locale 检测（同样采用更通用的处理）
     try:
         system_locale = locale.getdefaultlocale()[0]
         if system_locale:
-            if system_locale.startswith('zh'):
-                return "zh_CN"
-            elif system_locale.startswith('en'):
-                return "en_US"
-    except:
+            sys_code = system_locale.split('.')[0].replace('-', '_')
+            if sys_code in SUPPORTED_LANGUAGES:
+                return sys_code
+            # 宽松前缀匹配（回退）
+            for pfx, target in prefix_map.items():
+                if sys_code.startswith(pfx):
+                    return target if target in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
+    except Exception:
         pass
     
     # 最后的回退
