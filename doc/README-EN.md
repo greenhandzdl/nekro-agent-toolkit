@@ -1,6 +1,9 @@
-[Read in Chinese](../README.md)
-
 # Nekro Agent Toolkit
+
+<p align="center">
+	<img src="../icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit Mascot">
+  
+</p>
 
 Nekro Agent Toolkit is an all-in-one tool for deploying, backing up, and restoring Nekro Agent and related services. It supports automated Docker management and provides a dependency management script for quickly adding dependencies.
 
@@ -39,3 +42,7 @@ nekro-agent-toolkit -r BACKUP_FILE [DATA_DIR]
 
 - Requirements: Python 3.6+, Docker, Docker Compose
 - License: See [LICENSE](../LICENSE)
+
+## 🌐 For Other Languages
+
+| [Read in Chinese](../README.md) | [اقرأ باللغة العربية](./README-AR.md) | [Lire en français](./README-FR.md) | [Читать на русском](./README-RU.md) | [Leer en español](./README-ES.md) |

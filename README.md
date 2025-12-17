@@ -1,8 +1,15 @@
-[Read this in English](./doc/README-EN.md)
-
 # Nekro Agent Toolkit
 
+<p align="center">
+	<img src="./icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit 吉祥物">
+  
+</p>
+
 Nekro Agent Toolkit 是一款用于一站式部署、备份、恢复 Nekro Agent 及相关服务的工具，支持 Docker 环境下的自动化管理。
+
+## 🌐 其他语言用户请参阅
+
+| [Read in English](./doc/README-EN.md) | [اقرأ باللغة العربية](./doc/README-AR.md) | [Lire en français](./doc/README-FR.md) | [Читать на русском](./doc/README-RU.md) | [Leer en español](./doc/README-ES.md) |
 
 ## ✨ 主要功能
 
