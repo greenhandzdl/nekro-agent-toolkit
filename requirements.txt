@@ -1,1 +1,1 @@
-nekro-agent-toolkit==1.5.5
+nekro-agent-toolkit==1.5.6

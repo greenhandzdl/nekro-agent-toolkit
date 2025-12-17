@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="nekro-agent-toolkit",
-    version="1.5.5",
+    version="1.5.6",
     author="greenhandzdl",
     author_email="greenhandzdl@greenhandzdl.moe",
     description="Nekro Agent 安装、更新与备份的统一管理工具",
@@ -40,6 +40,13 @@ setup(
     },
     package_data={
         "conf": ["*.py"],
+        "data.zh_CN": ["*.py"],
+        "data.en_US": ["*.py"],
+        "data.es_ES": ["*.py"],
+        "data.fr_FR": ["*.py"],
+        "data.ja_JP": ["*.py"],
+        "data.ru_RU": ["*.py"],
+        "data.ar_SA": ["*.py"],
     },
     include_package_data=True,
 )

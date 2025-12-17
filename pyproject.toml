@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nekro-agent-toolkit"
-version = "1.5.5"
+version = "1.5.6"
 description = "Nekro Agent 安装、更新与备份的统一管理工具"
 readme = "README.md"
 authors = [{name = "greenhandzdl"}]
@@ -37,6 +37,12 @@ exclude = ["doc*", "tests*"]
 conf = ["*.py"]
 "data.zh_CN" = ["*.py"]
 "data.en_US" = ["*.py"]
+"data.es_ES" = ["*.py"]
+"data.fr_FR" = ["*.py"]
+"data.ja_JP" = ["*.py"]
+"data.ru_RU" = ["*.py"]
+"data.ar_SA" = ["*.py"]
 
 [tool.setuptools]
 py-modules = ["app"]
+include-package-data = true

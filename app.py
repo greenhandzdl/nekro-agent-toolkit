@@ -10,6 +10,7 @@ from module.update import update_agent
 from module.backup import backup_agent, recover_agent
 from utils.helpers import get_command_prefix, get_version_info, set_default_data_dir, get_default_data_dir, show_default_data_dir, confirm_use_default_data_dir
 import utils.i18n as i18n
+from conf.icons import LOGO
 
 
 def _detect_lang_from_argv():
@@ -42,6 +43,7 @@ def main():
 
     # 可选：允许用户通过 CLI 显式指定语言
     parser.add_argument('-l', '--lang', help='Language code (e.g., en_US, zh_CN)')
+    parser.add_argument('--logo', action='store_true', help='Display ASCII logo and exit')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-i', '--install', nargs='?', const='', metavar='PATH', help=_('install_description'))
@@ -63,6 +65,10 @@ def main():
     parser.add_argument('-y', '--yes', action='store_true', help=_('yes_description'))
 
     args = parser.parse_args()
+
+    if getattr(args, 'logo', False):
+        print(LOGO)
+        return
 
     if args.version:
         print(get_version_info())
