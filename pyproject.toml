@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nekro-agent-toolkit"
-version = "1.5.6"
+version = "1.6.0"
 description = "Nekro Agent 安装、更新与备份的统一管理工具"
 readme = "README.md"
 authors = [{name = "greenhandzdl"}]
