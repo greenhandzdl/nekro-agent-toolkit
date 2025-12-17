@@ -2,14 +2,13 @@
 
 <p align="center">
 	<img src="./icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit 吉祥物">
-  
 </p>
 
 Nekro Agent Toolkit 是一款用于一站式部署、备份、恢复 Nekro Agent 及相关服务的工具，支持 Docker 环境下的自动化管理。
 
-## 🌐 其他语言用户请参阅
+## 🌐 其他语言用户请参考
 
-| [Read in English](./doc/README-EN.md) | [اقرأ باللغة العربية](./doc/README-AR.md) | [Lire en français](./doc/README-FR.md) | [Читать на русском](./doc/README-RU.md) | [Leer en español](./doc/README-ES.md) |
+| [Read in English](./doc/README/README-EN.md) | [اقرأ باللغة العربية](./doc/README/README-AR.md) | [Lire en français](./doc/README/README-FR.md) | [Читать на русском](./doc/README/README-RU.md) | [Leer en español](./doc/README/README-ES.md) | [日本語で読む](./doc/README/README-JP.md) |
 
 ## ✨ 主要功能
 
@@ -41,7 +40,6 @@ nekro-agent-toolkit -r BACKUP_FILE [DATA_DIR]
 ### 使用 uv 管理依赖（推荐）
 
 本项目现在支持使用 `uv` 来管理依赖与生成可重现的锁文件 `uv.lock`。
-
 
 ## 附加信息
 
