@@ -1,14 +1,14 @@
 # Manuel d'utilisateur en français
 
 <p align="center">
-	<img src="../icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit吉祥物">
+	<img src="https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit吉祥物">
 </p>
 
 Nekro Agent Toolkit est un outil tout-en-un pour déployer, sauvegarder et restaurer Nekro Agent et les services associés, avec prise en charge de l'automatisation dans les environnements Docker.
 
 ## 🌐 Liens vers d'autres langues
 
-| [Read in English](README-EN.md) | [اقرأ باللغة العربية](README-AR.md) | [Lire en français](README-FR.md) | [Читать на русском](README-RU.md) | [Leer en español](README-ES.md) | [日本語で読む](README-JP.md) |
+| [Read in English](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-EN.md) | [اقرأ باللغة العربية](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-AR.md) | [Lire en français](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-FR.md) | [Читать на русском](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-RU.md) | [Leer en español](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-ES.md) | [日本語で読む](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-JP.md) |
 
 ## ✨ Fonctionnalités principales
 
@@ -44,4 +44,4 @@ Ce projet prend désormais en charge l'utilisation de `uv` pour gérer les dépe
 ## Informations supplémentaires
 
 - Exigences système : Python 3.6+, Docker, Docker Compose
-- Licence : voir [LICENSE](../LICENSE)
+- Licence : voir [LICENSE](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/LICENSE)

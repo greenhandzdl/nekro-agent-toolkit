@@ -1,14 +1,14 @@
 # Руководство пользователя на русском языке
 
 <p align="center">
-	<img src="../icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit吉祥物">
+	<img src="https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit吉祥物">
 </p>
 
 Nekro Agent Toolkit — это универсальный инструмент для развертывания, резервного копирования и восстановления Nekro Agent и связанных сервисов с поддержкой автоматизации в средах Docker.
 
 ## 🌐 Ссылки на другие языки
 
-| [Read in English](README-EN.md) | [اقرأ باللغة العربية](README-AR.md) | [Lire en français](README-FR.md) | [Читать на русском](README-RU.md) | [Leer en español](README-ES.md) | [日本語で読む](README-JP.md) |
+| [Read in English](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-EN.md) | [اقرأ باللغة العربية](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-AR.md) | [Lire en français](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-FR.md) | [Читать на русском](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-RU.md) | [Leer en español](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-ES.md) | [日本語で読む](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-JP.md) |
 
 ## ✨ Основные функции
 
@@ -44,4 +44,4 @@ nekro-agent-toolkit -r BACKUP_FILE [DATA_DIR]
 ## Дополнительная информация
 
 - Системные требования: Python 3.6+, Docker, Docker Compose
-- Лицензия: см. [LICENSE](../LICENSE)
+- Лицензия: см. [LICENSE](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/LICENSE)

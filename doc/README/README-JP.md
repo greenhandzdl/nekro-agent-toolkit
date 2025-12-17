@@ -1,14 +1,14 @@
 # 日本語ユーザーマニュアル
 
 <p align="center">
-	<img src="../icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit吉祥物">
+	<img src="https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit吉祥物">
 </p>
 
 Nekro Agent Toolkit は、Nekro Agent および関連サービスをデプロイ、バックアップ、復元するためのオールインワンツールであり、Docker 環境での自動化をサポートします。
 
 ## 🌐 他の言語へのリンク
 
-| [Read in English](README-EN.md) | [اقرأ باللغة العربية](README-AR.md) | [Lire en français](README-FR.md) | [Читать на русском](README-RU.md) | [Leer en español](README-ES.md) | [日本語で読む](README-JP.md) |
+| [Read in English](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-EN.md) | [اقرأ باللغة العربية](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-AR.md) | [Lire en français](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-FR.md) | [Читать на русском](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-RU.md) | [Leer en español](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-ES.md) | [日本語で読む](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-JP.md) |
 
 ## ✨ 主な機能
 
@@ -44,4 +44,4 @@ nekro-agent-toolkit -r BACKUP_FILE [DATA_DIR]
 ## 追加情報
 
 - システム要件: Python 3.6+、Docker、Docker Compose
-- ライセンス: [LICENSE](../LICENSE) を参照
+- ライセンス: [LICENSE](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/LICENSE) を参照

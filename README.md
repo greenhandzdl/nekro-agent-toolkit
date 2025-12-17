@@ -1,14 +1,14 @@
 # Nekro Agent Toolkit
 
 <p align="center">
-	<img src="./icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit 吉祥物">
+	<img src="https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/icons/nekro-agent-toolkit-icons.png" alt="Nekro Agent Toolkit 吉祥物">
 </p>
 
 Nekro Agent Toolkit 是一款用于一站式部署、备份、恢复 Nekro Agent 及相关服务的工具，支持 Docker 环境下的自动化管理。
 
 ## 🌐 其他语言用户请参考
 
-| [Read in English](./doc/README/README-EN.md) | [اقرأ باللغة العربية](./doc/README/README-AR.md) | [Lire en français](./doc/README/README-FR.md) | [Читать на русском](./doc/README/README-RU.md) | [Leer en español](./doc/README/README-ES.md) | [日本語で読む](./doc/README/README-JP.md) |
+| [Read in English](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-EN.md) | [اقرأ باللغة العربية](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-AR.md) | [Lire en français](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-FR.md) | [Читать на русском](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-RU.md) | [Leer en español](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-ES.md) | [日本語で読む](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/doc/README/README-JP.md) |
 
 ## ✨ 主要功能
 
@@ -44,4 +44,4 @@ nekro-agent-toolkit -r BACKUP_FILE [DATA_DIR]
 ## 附加信息
 
 - 系统要求：Python 3.6+，Docker，Docker Compose
-- 许可证：见 [LICENSE](./LICENSE)
+- 许可证：见 [LICENSE](https://cdn.jsdelivr.net/gh/greenhandzdl/nekro-agent-toolkit@main/LICENSE)

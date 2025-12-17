@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nekro-agent-toolkit"
-version = "1.6.0"
+version = "1.6.1"
 description = "Nekro Agent 安装、更新与备份的统一管理工具"
 readme = "README.md"
 authors = [{name = "greenhandzdl"}]
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -46,3 +46,4 @@ conf = ["*.py"]
 [tool.setuptools]
 py-modules = ["app"]
 include-package-data = true
+# license_files removed (use project.license-files)
