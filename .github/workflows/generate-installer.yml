@@ -7,6 +7,13 @@ on:
         description: 'Include NapCat service'
         type: boolean
         default: true
+      language:
+        description: 'Language'
+        type: choice
+        options:
+          - zh_CN
+          - en_US
+        default: zh_CN
 
 jobs:
   generate:
@@ -21,6 +28,7 @@ jobs:
             utils
             conf
             requirements.txt
+            doc/installer/README-*.md
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -76,6 +84,14 @@ jobs:
           mkdir -p ${{ runner.temp }}/installer_package
           cp ${{ runner.temp }}/na_data/.env ${{ runner.temp }}/installer_package/
           cp ${{ runner.temp }}/na_data/docker-compose.yml ${{ runner.temp }}/installer_package/
+
+          # Copy README based on language
+          if [ "${{ github.event.inputs.language }}" = "en_US" ]; then
+            cp ${{ github.workspace }}/doc/installer/README-en_US.md ${{ runner.temp }}/installer_package/README.md
+          else
+            cp ${{ github.workspace }}/doc/installer/README-zh_CN.md ${{ runner.temp }}/installer_package/README.md
+          fi
+
           cd ${{ runner.temp }}/installer_package
           zip -r installer.zip ./
 
