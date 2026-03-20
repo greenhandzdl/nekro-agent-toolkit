@@ -85,6 +85,7 @@ jobs:
           git config --local user.name "GitHub Action"
 
           # Copy generated files to repo
+          mkdir -p installer
           cp ${{ runner.temp }}/na_data/.env ./installer/
           cp ${{ runner.temp }}/na_data/docker-compose.yml ./installer/
 
@@ -99,15 +100,9 @@ jobs:
 
           # Generate commit message based on language
           if [ "$LANGUAGE" = "zh_CN" ]; then
-            COMMIT_MSG="docs: 更新安装文件
-
-- 更新 .env 配置文件
-- 更新 docker-compose 文件"
+            COMMIT_MSG="docs: 更新安装文件\n\n- 更新 .env 配置文件\n- 更新 docker-compose 文件"
           else
-            COMMIT_MSG="docs: Update installer files
-
-- Update .env configuration file
-- Update docker-compose file"
+            COMMIT_MSG="docs: Update installer files\n\n- Update .env configuration file\n- Update docker-compose file"
           fi
 
           # Commit and push
