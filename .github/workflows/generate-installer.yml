@@ -7,33 +7,32 @@ on:
         description: 'Include NapCat service'
         type: boolean
         default: true
-      language:
-        description: 'Language for commit message'
-        type: choice
-        options:
-          - zh_CN
-          - en_US
-        default: en_US
 
 jobs:
   generate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            module
+            utils
+            conf
+            requirements.txt
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          uv sync
 
       - name: Create temp data directory
         run: |
@@ -68,43 +67,22 @@ jobs:
           # Rename to docker-compose.yml for consistency
           mv "${{ runner.temp }}/na_data/$COMPOSE_FILE" "${{ runner.temp }}/na_data/docker-compose.yml"
 
-      - name: Display generated files
+      - name: Display docker-compose file
         run: |
-          echo "=== .env file ==="
-          cat ${{ runner.temp }}/na_data/.env
-          echo ""
           echo "=== docker-compose.yml (first 30 lines) ==="
           head -n 30 ${{ runner.temp }}/na_data/docker-compose.yml
 
-      - name: Commit and push files
-        env:
-          LANGUAGE: ${{ github.event.inputs.language }}
+      - name: Create installer package
         run: |
-          # Configure git
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          mkdir -p ${{ runner.temp }}/installer_package
+          cp ${{ runner.temp }}/na_data/.env ${{ runner.temp }}/installer_package/
+          cp ${{ runner.temp }}/na_data/docker-compose.yml ${{ runner.temp }}/installer_package/
+          cd ${{ runner.temp }}/installer_package
+          zip -r installer.zip ./
 
-          # Copy generated files to repo
-          mkdir -p installer
-          cp ${{ runner.temp }}/na_data/.env ./installer/
-          cp ${{ runner.temp }}/na_data/docker-compose.yml ./installer/
-
-          # Add files to git
-          git add installer/.env installer/docker-compose.yml
-
-          # Check if there are changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-
-          # Generate commit message based on language
-          if [ "$LANGUAGE" = "zh_CN" ]; then
-            COMMIT_MSG="docs: 更新安装文件\n\n- 更新 .env 配置文件\n- 更新 docker-compose 文件"
-          else
-            COMMIT_MSG="docs: Update installer files\n\n- Update .env configuration file\n- Update docker-compose file"
-          fi
-
-          # Commit and push
-          git commit -m "$COMMIT_MSG"
-          git push
+      - name: Upload installer package
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-files
+          path: ${{ runner.temp }}/installer_package/installer.zip
+          retention-days: 30

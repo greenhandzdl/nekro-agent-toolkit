@@ -19,7 +19,6 @@ The `Generate Installer Files` workflow automatically performs the following tas
 3. Click the **Run workflow** button
 4. Configure options:
    - **Include NapCat service**: Whether to include NapCat service (enabled by default)
-   - **Language**: Commit message language (zh_CN / en_US)
 5. Click **Run workflow** to start execution
 
 ### Parameters
@@ -27,17 +26,16 @@ The `Generate Installer Files` workflow automatically performs the following tas
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | with_napcat | boolean | true | Whether to include NapCat service |
-| language | choice | en_US | Commit message language |
 
-## Output Files
+## Download Files
 
-After workflow execution, the following files will be generated in the `installer/` directory:
+After workflow execution, a ZIP package containing the installer files will be generated:
 
-```
-installer/
-├── .env                 # Environment configuration file (with randomly generated secrets)
-└── docker-compose.yml   # Docker Compose configuration file
-```
+1. Find the **Artifacts** section on the workflow run page
+2. Download the **installer-files** file
+3. After extraction, you will get:
+   - `.env` - Environment configuration file (contains randomly generated secrets)
+   - `docker-compose.yml` - Docker Compose configuration file
 
 ## Related Links
 

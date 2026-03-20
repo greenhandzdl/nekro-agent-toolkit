@@ -19,7 +19,6 @@
 3. 点击 **Run workflow** 按钮
 4. 配置选项：
    - **Include NapCat service**: 是否包含 NapCat 服务（默认启用）
-   - **Language**: 提交信息的语言（zh_CN / en_US）
 5. 点击 **Run workflow** 开始执行
 
 ### 参数说明
@@ -27,17 +26,16 @@
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | with_napcat | boolean | true | 是否包含 NapCat 服务 |
-| language | choice | en_US | 提交信息的语言 |
 
-## 输出文件
+## 下载文件
 
-工作流执行完成后，会在 `installer/` 目录下生成以下文件：
+工作流执行完成后，会生成一个包含安装文件的 ZIP 包：
 
-```
-installer/
-├── .env                 # 环境配置文件（包含随机生成的密钥）
-└── docker-compose.yml   # Docker Compose 配置文件
-```
+1. 在工作流运行页面找到 **Artifacts** 部分
+2. 下载 **installer-files** 文件
+3. 解压后得到以下文件：
+   - `.env` - 环境配置文件（包含随机生成的密钥）
+   - `docker-compose.yml` - Docker Compose 配置文件
 
 ## 相关链接
 
