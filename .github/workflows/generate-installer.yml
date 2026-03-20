@@ -40,8 +40,7 @@ jobs:
 
       - name: Generate .env file (dry-run)
         run: |
-          cd ${{ runner.temp }}/na_data
-          python ${{ github.workspace }}/module/install.py --dry-run --yes
+          python ${{ github.workspace }}/module/install.py ${{ runner.temp }}/na_data --dry-run --yes
 
       - name: Download docker-compose file
         run: |
