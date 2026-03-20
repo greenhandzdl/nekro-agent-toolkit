@@ -18,6 +18,8 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -101,4 +103,4 @@ jobs:
         with:
           name: installer-files
           path: ${{ runner.temp }}/installer_package/installer.zip
-          retention-days: 30
+          retention-days: 7
