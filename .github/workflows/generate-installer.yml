@@ -28,7 +28,8 @@ jobs:
             utils
             conf
             requirements.txt
-            doc/installer/README-*.md
+            doc/installer/README-zh_CN.md
+            doc/installer/README-en_US.md
 
       - name: Set up Python
         uses: actions/setup-python@v5
