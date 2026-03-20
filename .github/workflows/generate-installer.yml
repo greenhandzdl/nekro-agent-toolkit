@@ -1,0 +1,115 @@
+name: Generate Installer Files
+
+on:
+  workflow_dispatch:
+    inputs:
+      with_napcat:
+        description: 'Include NapCat service'
+        type: boolean
+        default: true
+      language:
+        description: 'Language for commit message'
+        type: choice
+        options:
+          - zh_CN
+          - en_US
+        default: en_US
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create temp data directory
+        run: |
+          mkdir -p ${{ runner.temp }}/na_data
+
+      - name: Generate .env file (dry-run)
+        run: |
+          cd ${{ runner.temp }}/na_data
+          python ${{ github.workspace }}/module/install.py --dry-run --yes
+
+      - name: Download docker-compose file
+        run: |
+          COMPOSE_FILE="docker-compose-x-napcat.yml"
+          if [ "${{ github.event.inputs.with_napcat }}" != "true" ]; then
+            COMPOSE_FILE="docker-compose.yml"
+          fi
+
+          # Try multiple base URLs
+          BASE_URLS=(
+            "https://raw.githubusercontent.com/KroMiose/nekro-agent/main/docker"
+            "https://cdn.jsdelivr.net/gh/KroMiose/nekro-agent@main/docker"
+          )
+
+          for url in "${BASE_URLS[@]}"; do
+            echo "Trying $url/$COMPOSE_FILE..."
+            if curl -fsSL -o "${{ runner.temp }}/na_data/$COMPOSE_FILE" "$url/$COMPOSE_FILE"; then
+              echo "Successfully downloaded from $url"
+              break
+            fi
+          done
+
+          # Rename to docker-compose.yml for consistency
+          mv "${{ runner.temp }}/na_data/$COMPOSE_FILE" "${{ runner.temp }}/na_data/docker-compose.yml"
+
+      - name: Display generated files
+        run: |
+          echo "=== .env file ==="
+          cat ${{ runner.temp }}/na_data/.env
+          echo ""
+          echo "=== docker-compose.yml (first 30 lines) ==="
+          head -n 30 ${{ runner.temp }}/na_data/docker-compose.yml
+
+      - name: Commit and push files
+        env:
+          LANGUAGE: ${{ github.event.inputs.language }}
+        run: |
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Copy generated files to repo
+          cp ${{ runner.temp }}/na_data/.env ./installer/
+          cp ${{ runner.temp }}/na_data/docker-compose.yml ./installer/
+
+          # Add files to git
+          git add installer/.env installer/docker-compose.yml
+
+          # Check if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          # Generate commit message based on language
+          if [ "$LANGUAGE" = "zh_CN" ]; then
+            COMMIT_MSG="docs: 更新安装文件
+
+- 更新 .env 配置文件
+- 更新 docker-compose 文件"
+          else
+            COMMIT_MSG="docs: Update installer files
+
+- Update .env configuration file
+- Update docker-compose file"
+          fi
+
+          # Commit and push
+          git commit -m "$COMMIT_MSG"
+          git push
