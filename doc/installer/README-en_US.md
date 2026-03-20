@@ -10,6 +10,9 @@
 ```bash
 docker compose --env-file ./.env pull
 docker compose --env-file ./.env up -d
+
+# Pull sandbox image (required)
+docker pull kromiose/nekro-agent-sandbox
 ```
 
 ### 2. Stop Services

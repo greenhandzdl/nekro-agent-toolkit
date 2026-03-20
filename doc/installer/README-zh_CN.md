@@ -10,6 +10,9 @@
 ```bash
 docker compose --env-file ./.env pull
 docker compose --env-file ./.env up -d
+
+# 拉取沙箱镜像（必须）
+docker pull kromiose/nekro-agent-sandbox
 ```
 
 ### 2. 停止服务
