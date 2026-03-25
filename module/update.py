@@ -9,16 +9,21 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from utils.helpers import check_dependencies
-from utils.update_utils import update_nekro_agent_only, update_all_services
+from utils.update_utils import (
+    update_nekro_agent_only, update_all_services,
+    get_current_image_channel, switch_image_channel
+)
 from utils.i18n import get_message as _
 
-def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive: bool = False):
+def update_agent(nekro_data_dir: str, update_all: bool = False, non_interactive: bool = False,
+                 update_channel: str = None):
     """执行 Nekro Agent 的更新流程。
 
     Args:
         nekro_data_dir (str): 应用数据目录。
         update_all (bool): 是否更新所有服务。
         non_interactive (bool): 是否跳过交互式确认步骤。
+        update_channel (str): 切换到的镜像 channel，'latest' 或 'preview'，None 表示跳过。
     """
     # 检查依赖
     docker_compose_cmd = check_dependencies()

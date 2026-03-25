@@ -64,6 +64,9 @@ def main():
     #通用选项
     parser.add_argument('-y', '--yes', action='store_true', help=_('yes_description'))
 
+# 更新选项
+    parser.add_argument('--channel', choices=['latest', 'preview'], help=_('update_module_channel_help'))
+
     args = parser.parse_args()
 
     if getattr(args, 'logo', False):
@@ -131,7 +134,8 @@ def main():
         update_agent(
             nekro_data_dir=update_path,
             update_all=False,
-            non_interactive=args.yes
+            non_interactive=args.yes,
+            update_channel=args.channel
         )
     elif args.upgrade is not None:
         # 处理升级命令
@@ -153,7 +157,8 @@ def main():
         update_agent(
             nekro_data_dir=upgrade_path,
             update_all=True,
-            non_interactive=args.yes
+            non_interactive=args.yes,
+            update_channel=args.channel
         )
     elif args.backup is not None:
         # 处理备份命令

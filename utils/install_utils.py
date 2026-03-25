@@ -194,7 +194,38 @@ def download_compose_file(with_napcat_arg, non_interactive=False):
         print(_('error_cannot_pull_compose_file'), file=sys.stderr)
         sys.exit(1)
     
+    # 创建 docker-compose.dev.yml (preview 版本)
+    _create_dev_compose_file(target_file)
+
     return with_napcat
+
+
+def _create_dev_compose_file(target_file):
+    """从 docker-compose.yml 创建 docker-compose.dev.yml，将镜像 tag 从 latest 改为 preview。
+
+    参数:
+        target_file (str): 原始 docker-compose.yml 文件路径。
+    """
+    dev_file = "docker-compose.dev.yml"
+
+    try:
+        # 复制文件
+        shutil.copy(target_file, dev_file)
+        print(_('created_dev_compose_file', dev_file))
+
+        # 读取并替换镜像 tag
+        with open(dev_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # 替换镜像 tag: latest -> preview
+        updated_content = content.replace('image: kromiose/nekro-agent:latest', 'image: kromiose/nekro-agent:preview')
+
+        with open(dev_file, 'w', encoding='utf-8') as f:
+            f.write(updated_content)
+
+        print(_('dev_compose_image_replaced'))
+    except Exception as e:
+        print(_('error_create_dev_compose', e))
 
 
 def _download_compose_file_with_backup(compose_filename, target_file, system):
